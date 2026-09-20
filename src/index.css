@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode for dark: utilities */
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Vazirmatn", system-ui, -apple-system, sans-serif;
+  
+  --color-kh-bg: var(--kh-current-bg);
+  --color-kh-card: var(--kh-current-card);
+  --color-kh-text: var(--kh-current-text);
+  --color-kh-text-light: #FFFFFF;
+  --color-kh-muted: #6B7280;
+  --color-kh-gold: #D4A93D;
+  --color-kh-dark: #1A1A1A;
+
+  --color-dark-bg: #121212;
+  --color-dark-card: #1E1E1E;
+  --color-dark-text: #E0E0E0;
+  --color-dark-border: #333333;
+}
+
+@layer base {
+  :root {
+    --kh-current-bg: #F7F6F2;
+    --kh-current-text: #000000;
+    --kh-current-card: #FFFFFF;
+  }
+
+  .dark {
+    --kh-current-bg: #121212;
+    --kh-current-text: #E0E0E0;
+    --kh-current-card: #1E1E1E;
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--kh-current-bg);
+    color: var(--kh-current-text);
+    @apply transition-colors duration-300;
+    font-family: var(--font-sans);
+  }
+
+  /* Hide number input spinners */
+  input[type=number]::-webkit-inner-spin-button, 
+  input[type=number]::-webkit-outer-spin-button { 
+    -webkit-appearance: none; 
+    margin: 0; 
+  }
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+}

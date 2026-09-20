@@ -1,0 +1,6 @@
+{
+  "name": "خزانه",
+  "description": "سیستم مدیریت طلافروشی خزانه - پنل مدیریت حرفه‌ای",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
