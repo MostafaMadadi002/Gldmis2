@@ -1,13 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../lib/api';
-
-export interface Rate {
-  id: string;
-  label: string;
-  value: number;
-  currency: string;
-  type: 'gold' | 'silver' | 'currency' | 'gemstone';
-}
+import { Rate } from '../types';
 
 interface RatesContextType {
   rates: Rate[];
@@ -20,7 +13,7 @@ interface RatesContextType {
 
 const RatesContext = createContext<RatesContextType | undefined>(undefined);
 
-export const RatesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function RatesProvider({ children, isAuthenticated }: { children: React.ReactNode; isAuthenticated: boolean }) {
   const [rates, setRates] = useState<Rate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -46,8 +39,13 @@ export const RatesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   useEffect(() => {
-    fetchRates();
-  }, []);
+    if (isAuthenticated) {
+      fetchRates();
+    } else {
+      setRates([]);
+      setIsLoading(false);
+    }
+  }, [isAuthenticated]);
 
   const updateRate = async (id: string, value: number) => {
     try {
@@ -110,10 +108,10 @@ export const RatesProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   );
 };
 
-export const useRates = () => {
+export function useRates() {
   const context = useContext(RatesContext);
   if (!context) {
     throw new Error('useRates must be used within a RatesProvider');
   }
   return context;
-};
+}
