@@ -103,7 +103,7 @@ const Dashboard: React.FC = () => {
     
     activeGoldProducts.forEach((p: any) => {
       const weight = (Number(p.weight) || 0) * (Number(p.quantity) || 0);
-      const caratLabel = p.carat ? p.carat.trim() : (language === 'en' ? 'Other' : 'سایر');
+      const caratLabel = p.carat ? p.carat.trim() : t('other_val');
       const rate = getRate(goldRates, p.carat);
       const value = weight * rate;
       
@@ -133,13 +133,13 @@ const Dashboard: React.FC = () => {
 
     meltedGoldInflow.forEach((p: any) => {
       const weight = (Number(p.weight) || 0) * (Number(p.quantity) || 1);
-      const caratLabel = p.carat ? p.carat.trim() : (language === 'en' ? 'Other' : 'سایر');
+      const caratLabel = p.carat ? p.carat.trim() : t('other_val');
       meltedInflowByCarat[caratLabel] = (meltedInflowByCarat[caratLabel] || 0) + weight;
     });
 
     meltedDeductions.forEach((p: any) => {
       const weight = (Number(p.weight) || 0) * (Number(p.quantity) || 1);
-      const caratLabel = p.carat ? p.carat.trim() : (language === 'en' ? 'Other' : 'سایر');
+      const caratLabel = p.carat ? p.carat.trim() : t('other_val');
       meltedDeductionsByCarat[caratLabel] = (meltedDeductionsByCarat[caratLabel] || 0) + weight;
       totalDeductedMeltWeight += weight;
     });
@@ -174,7 +174,7 @@ const Dashboard: React.FC = () => {
     
     silverProducts.forEach((p: any) => {
       const weight = (Number(p.weight) || 0) * (Number(p.quantity) || 0);
-      const caratLabel = p.carat ? p.carat.trim() : (language === 'en' ? 'Other' : 'سایر');
+      const caratLabel = p.carat ? p.carat.trim() : t('other_val');
       const rate = getRate(silverRates, p.carat);
       const value = weight * rate;
       
@@ -295,7 +295,7 @@ const Dashboard: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div className={language === 'en' ? 'text-left' : 'text-right'}>
           <h2 className="text-3xl font-bold mb-2 text-kh-text dark:text-kh-gold">{t('welcome')}</h2>
-          <p className="text-kh-muted">{language === 'en' ? 'Welcome to Khazana Management System.' : 'به سیستم مدیریت خزانه خوش آمدید.'}</p>
+          <p className="text-kh-muted">{t('welcome_message')}</p>
         </div>
         <div className={`flex flex-col ${language === 'en' ? 'items-start' : 'items-end'} gap-3 w-full sm:w-auto`}>
           <p className="text-kh-muted text-sm">{t('today')}: {todayDate}</p>
@@ -333,7 +333,7 @@ const Dashboard: React.FC = () => {
             <div className="space-y-1">
               {(Object.entries(stats.goldByCarat) as [string, { weight: number; value: number }][]).length === 0 ? (
                 <p className="text-xs text-kh-muted text-center py-1">
-                  {language === 'en' ? 'No stock' : 'موجودی خالی'}
+                  {t('no_stock')}
                 </p>
               ) : (
                 (Object.entries(stats.goldByCarat) as [string, { weight: number; value: number }][]).map(([carat, data]) => (
@@ -361,7 +361,7 @@ const Dashboard: React.FC = () => {
             <div className="space-y-1.5">
               {(Object.entries(stats.meltedByCarat) as [string, { weight: number; value: number; rawWeight?: number; deductedWeight?: number }][]).length === 0 ? (
                 <p className="text-xs text-kh-muted text-center py-1">
-                  {language === 'en' ? 'No melted gold' : 'طلای ذوبی ثبت نشده'}
+                  {t('no_data')}
                 </p>
               ) : (
                 <>
@@ -371,7 +371,7 @@ const Dashboard: React.FC = () => {
                         <span className="font-bold text-amber-700 dark:text-amber-400">{carat}</span>
                         {(Number(data?.deductedWeight) || 0) > 0 && (
                           <span className="text-[10px] text-amber-600 dark:text-amber-400/90 font-medium">
-                            {language === 'en' ? `-${data.deductedWeight?.toFixed(2)}g crafted` : `(-${data.deductedWeight?.toFixed(2)} گرم کسر ساخت)`}
+                            ({data.deductedWeight?.toFixed(2)} {t('melt_crafted_deduction')})
                           </span>
                         )}
                       </div>
@@ -391,7 +391,7 @@ const Dashboard: React.FC = () => {
                   ))}
                   {Number(stats.totalDeductedMeltWeight) > 0 && (
                     <div className="pt-1 mt-1 border-t border-dashed border-amber-500/20 flex justify-between text-[11px] text-amber-700 dark:text-amber-400 font-bold px-1">
-                      <span>{language === 'en' ? 'Total Crafted to Inventory:' : 'مجموع کسر شده برای انبار:'}</span>
+                      <span>{t('total_melt_deducted')}</span>
                       <span>{Number(stats.totalDeductedMeltWeight).toFixed(2)} {t('gram')}</span>
                     </div>
                   )}
@@ -412,7 +412,7 @@ const Dashboard: React.FC = () => {
             <div className="space-y-1">
               {(Object.entries(stats.silverByCarat) as [string, { weight: number; value: number }][]).length === 0 ? (
                 <p className="text-xs text-kh-muted text-center py-1">
-                  {language === 'en' ? 'No stock' : 'موجودی خالی'}
+                  {t('no_stock')}
                 </p>
               ) : (
                 (Object.entries(stats.silverByCarat) as [string, { weight: number; value: number }][]).map(([carat, data]) => (
@@ -556,7 +556,7 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 <div className="flex justify-between items-center pt-2 border-t border-black/5 dark:border-white/5 font-black text-xs bg-kh-gold/5 -mx-5 px-5 py-2">
-                  <span className="text-kh-text dark:text-kh-gold">{language === 'en' ? 'Profit This Month' : 'سود خالص این ماه'}:</span>
+                  <span className="text-kh-text dark:text-kh-gold">{t('this_month')}:</span>
                   <span className={`font-mono ${stats.thisMonthProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
                     {stats.thisMonthProfit >= 0 ? '+' : ''}{Number(stats.thisMonthProfit || 0).toLocaleString()} {t('afghani')}
                   </span>
@@ -567,7 +567,7 @@ const Dashboard: React.FC = () => {
             {/* Total Profit & Navigation */}
             <div className="mt-4 pt-3 border-t border-black/5 dark:border-white/5 space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-kh-text/60 dark:text-kh-gold/60 font-bold">{t('total_profit')}:</span>
+                <span className="text-kh-text/60 dark:text-kh-gold/60 font-bold">{t('all_time')}:</span>
                 <span className={`font-black font-mono ${stats.totalNetProfit >= 0 ? 'text-kh-gold' : 'text-red-400'}`}>
                   {stats.totalNetProfit >= 0 ? '+' : ''}{Number(stats.totalNetProfit || 0).toLocaleString()} {t('afghani')}
                 </span>
@@ -577,7 +577,7 @@ const Dashboard: React.FC = () => {
                 to="/reports"
                 className="w-full mt-2 flex items-center justify-between text-[11px] font-bold text-kh-gold hover:underline pt-1"
               >
-                <span>{language === 'en' ? 'Financial Reports & Deductions' : 'گزارش مفاد و کسر پول / مصارف'}</span>
+                <span>{t('financial_reports_deductions')}</span>
                 <ArrowRight size={13} className={language === 'en' ? '' : 'rotate-180'} />
               </Link>
             </div>

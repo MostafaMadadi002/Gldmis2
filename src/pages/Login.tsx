@@ -82,11 +82,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
       // If user does not exist or password mismatch
       setIsLoading(false);
-      setErrorMessage(
-        language === 'en'
-          ? 'Invalid username or password.'
-          : 'اسم یا رمز شما اشتباه است'
-      );
+      setErrorMessage(t('invalid_credentials'));
     }
   };
 
@@ -104,8 +100,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               <div className="p-4 bg-kh-gold/10 rounded-3xl mb-4 group hover:scale-110 transition-transform duration-500">
                 <Gem className="text-kh-gold" size={48} />
               </div>
-              <h1 className="text-3xl font-black text-kh-text dark:text-kh-gold tracking-tight">خزانه</h1>
-              <p className="text-kh-muted mt-2 text-sm font-bold">سیستم مدیریت هوشمند زرگری</p>
+              <h1 className="text-3xl font-black text-kh-text dark:text-kh-gold tracking-tight">{t('app_name')}</h1>
+              <p className="text-kh-muted mt-2 text-sm font-bold">{language === 'en' ? 'Smart Jewelry Management System' : 'سیستم مدیریت هوشمند زرگری'}</p>
             </div>
 
             {errorMessage && (
@@ -116,7 +112,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               >
                 <AlertCircle size={20} className="shrink-0 mt-0.5" />
                 <div className="flex flex-col">
-                  <span className="font-black">{language === 'en' ? 'Login Failed' : 'خطا در ورود'}</span>
+                  <span className="font-black">{t('login_error')}</span>
                   <span className="text-xs opacity-90 mt-0.5">{errorMessage}</span>
                 </div>
               </motion.div>
@@ -126,7 +122,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               {/* Username */}
               <div className="space-y-2">
                 <label className="text-[11px] font-black text-kh-text/60 dark:text-kh-gold/60 pr-1">
-                  نام کاربری
+                  {t('username')}
                 </label>
                 <div className="relative group">
                   <input 
@@ -147,7 +143,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               {/* Password */}
               <div className="space-y-2">
                 <label className="text-[11px] font-black text-kh-text/60 dark:text-kh-gold/60 pr-1">
-                  رمز عبور
+                  {t('password')}
                 </label>
                 <div className="relative group">
                   <input 
@@ -183,7 +179,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 ) : (
                   <>
                     <LogIn size={20} />
-                    ورود به سیستم
+                    {t('login')}
                   </>
                 )}
               </button>

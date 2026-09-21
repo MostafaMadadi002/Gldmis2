@@ -14,7 +14,7 @@ import {
   Camera,
   CheckCircle2
 } from 'lucide-react';
-import { useSettings } from '../context/SettingsContext';
+import { useSettings, SettingsContextType } from '../context/SettingsContext';
 
 const Settings: React.FC = () => {
   const { 
@@ -22,8 +22,9 @@ const Settings: React.FC = () => {
     theme, setTheme, 
     shopInfo, setShopInfo, 
     logo, setLogo,
+    saveSettings,
     t 
-  } = useSettings();
+  } = useSettings() as SettingsContextType;
 
   const isRtl = language !== 'en';
   const [isSaving, setIsSaving] = useState(false);
@@ -46,24 +47,19 @@ const Settings: React.FC = () => {
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     
-    // Save to localStorage (this logic could be moved to Context for even more backend readiness)
-    const settingsToSave = {
-      shopInfo,
-      logo,
-      language,
-      theme
-    };
-    localStorage.setItem('khazana_settings', JSON.stringify(settingsToSave));
-
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      await saveSettings();
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-    }, 800);
+    } catch (err) {
+      alert('Failed to save settings');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleBackup = () => {
@@ -165,14 +161,14 @@ const Settings: React.FC = () => {
                   ) : (
                     <>
                       <Camera size={40} />
-                      <span className="text-[11px] mt-2 font-bold text-center px-4">{language === 'en' ? 'Select Shop Logo' : (language === 'ps' ? 'د پلورنځي لوگو غوره کړئ' : 'انتخاب لوگوی فروشگاه')}</span>
+                      <span className="text-[11px] mt-2 font-bold text-center px-4">{t('select_logo')}</span>
                     </>
                   )}
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-kh-text">
                     <ImageIcon size={24} />
                   </div>
                 </div>
-                <p className="text-[10px] font-bold text-kh-text/30">{language === 'en' ? 'Suggested: Square PNG image' : (language === 'ps' ? 'وړاندیز: مربع PNG انځور' : 'پیشنهاد: تصویر مربعی PNG')}</p>
+                <p className="text-[10px] font-bold text-kh-text/30">{t('suggested_logo')}</p>
               </div>
 
               {/* Text Inputs */}

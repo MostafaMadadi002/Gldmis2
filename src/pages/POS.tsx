@@ -66,9 +66,9 @@ const POS: React.FC = () => {
     name: '',
     weight: '',
     material: 'gold' as 'gold' | 'silver' | 'jewelry',
-    carat: language === 'en' ? '18 Carat' : '۱۸ عیار',
-    stoneType: language === 'en' ? 'Agate' : 'عقیق',
-    origin: language === 'en' ? 'Afghanistan' : 'افغانستان',
+    carat: t('carat_18'),
+    stoneType: t('agate'),
+    origin: t('afghanistan'),
     quantity: '1',
     price: '',
   };
@@ -170,7 +170,7 @@ const POS: React.FC = () => {
         } else {
           errorMsg = JSON.stringify(errorData);
         }
-        alert(`${language === 'en' ? 'Error adding product' : 'خطا در ثبت محصول'}:\n${errorMsg}`);
+        alert(`${t('error')} ${t('add_item')}:\n${errorMsg}`);
       } else {
         alert(language === 'en' ? 'Server connection error. Please try again.' : 'خطا در ارتباط با سرور. لطفاً دوباره تلاش کنید.');
       }
@@ -776,137 +776,186 @@ const POS: React.FC = () => {
               </div>
             </div>
 
-            {/* Unified Printable Invoice */}
-            <div className="hidden print:block fixed inset-0 z-[999] bg-white text-black p-0 overflow-visible">
+            {/* Unified Printable Invoice (A4 Modern Luxury) */}
+            <div className="hidden print:block fixed inset-0 z-[999] bg-white text-[#111827] p-0 overflow-visible">
               {cart.length > 0 && (
-                <div className={`printable-invoice bg-white text-black p-10 font-sans ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} style={{ direction: isRtl ? 'rtl' : 'ltr', minHeight: '297mm' }}>
-                {/* Header */}
-                <div className="flex flex-col items-center border-b-4 border-black pb-6 mb-8 text-center">
-                  <div className="flex flex-col items-center gap-4 mb-4">
-                    {logo ? (
-                      <img src={logo} alt="Shop Logo" className="w-24 h-24 object-contain" />
-                    ) : (
-                      <div className="w-20 h-20 border-2 border-black flex items-center justify-center rounded-2xl">
-                        <Gem size={48} className="text-black" />
+                <div 
+                  className={`printable-invoice bg-white p-12 relative flex flex-col ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} 
+                  style={{ 
+                    direction: isRtl ? 'rtl' : 'ltr', 
+                    minHeight: '297mm', 
+                    width: '210mm', 
+                    margin: '0 auto',
+                    fontFamily: 'Vazirmatn, system-ui, -apple-system, sans-serif'
+                  }}
+                >
+                  {/* Decorative Accent */}
+                  <div className={`absolute top-0 ${isRtl ? 'right-0' : 'left-0'} w-32 h-1 bg-[#C6A15B]`} />
+
+                  {/* Header Section */}
+                  <div className="flex justify-between items-start mb-12">
+                    <div className="flex items-center gap-5">
+                      {logo ? (
+                        <div className="w-20 h-20 bg-[#F8F7F4] rounded-2xl flex items-center justify-center p-3 border border-[#C6A15B]/10">
+                          <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+                        </div>
+                      ) : (
+                        <div className="w-20 h-20 bg-[#111827] rounded-2xl flex items-center justify-center border border-[#C6A15B]/20">
+                          <Gem className="text-[#C6A15B]" size={36} />
+                        </div>
+                      )}
+                      <div>
+                        <h1 className="text-3xl font-black tracking-tight text-[#111827] mb-1">{shopInfo.name}</h1>
+                        <p className="text-[#C6A15B] text-xs font-bold uppercase tracking-widest opacity-80">{shopInfo.description}</p>
                       </div>
-                    )}
-                    <div>
-                      <h1 className="text-4xl font-black mb-1 tracking-tight">{shopInfo.name}</h1>
-                      <p className="text-lg font-bold text-gray-700 leading-tight">{shopInfo.description}</p>
+                    </div>
+                    <div className={`text-${isRtl ? 'left' : 'right'} pt-2`}>
+                      <div className="text-[10px] font-black text-[#6B7280] uppercase tracking-[0.3em] mb-1">{t('official_invoice')}</div>
+                      <div className="text-2xl font-black text-[#111827] mb-1">#{currentInvoiceNum}</div>
+                      <div className="text-xs font-bold text-[#6B7280]">{new Date().toLocaleDateString(language === 'en' ? 'en-US' : 'fa-IR')}</div>
                     </div>
                   </div>
-                  <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm font-black border-t border-black/10 pt-4 w-full">
-                    <div className="flex items-center gap-2">
-                      <span className="opacity-60">{t('phone')}:</span>
-                      <span className="font-mono">{shopInfo.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="opacity-60">{t('address')}:</span>
-                      <span>{shopInfo.address}</span>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="flex justify-between items-center mb-8 bg-gray-50 p-4 border-2 border-black rounded-2xl">
-                  <div className="space-y-1">
-                    <div className="text-sm font-black text-gray-900">{t('invoice_no')}: <span className="text-xl">#{currentInvoiceNum}</span></div>
-                    <div className="text-sm font-bold text-gray-700">{t('date')}: <span className="font-black text-black">{new Date().toLocaleDateString(language === 'en' ? 'en-US' : 'fa-IR')}</span></div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-black text-gray-500 uppercase">{t('customer_name')}:</div>
-                    <div className="text-xl font-black">{customerName || t('guest_customer')}</div>
-                  </div>
-                </div>
+                  {/* Info Grid (Shop, Customer, Seller) */}
+                  <div className="grid grid-cols-3 gap-6 mb-10">
+                    <div className="bg-[#F8F7F4] rounded-2xl p-5 border border-slate-100">
+                      <div className="text-[9px] font-black text-[#C6A15B] uppercase tracking-widest mb-3">{t('shop_info')}</div>
+                      <div className="space-y-2">
+                        <div className="flex items-start gap-2">
+                          <MapPin size={12} className="text-[#6B7280] mt-0.5 shrink-0" />
+                          <span className="text-[11px] font-bold text-[#111827] leading-relaxed">{shopInfo.address}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone size={12} className="text-[#6B7280] shrink-0" />
+                          <span className="text-[11px] font-black text-[#111827] font-mono">{shopInfo.phone}</span>
+                        </div>
+                      </div>
+                    </div>
 
-                <table className="w-full border-collapse mb-10">
-                  <thead>
-                    <tr className="border-b-4 border-black text-sm font-black text-black uppercase">
-                      <th className="py-4 px-2 w-12 text-center">#</th>
-                      <th className="py-4 px-2 text-right">{t('description')}</th>
-                      <th className="py-4 px-2 text-center">{t('quantity')}</th>
-                      <th className="py-4 px-2 text-center">{t('weight')}</th>
-                      <th className="py-4 px-2 text-left">{t('total_amount')} ({t('afghani')})</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y-2 divide-black/10">
-                    {cart.map((item, index) => {
-                      const rawSuggested = (item.selectedPrice || 0) * (item.material === 'jewelry' ? 1 : (item.selectedWeight || 0)) * (item.selectedQuantity || 1);
-                      const currentPrice = item.manualPrice !== undefined ? item.manualPrice : rawSuggested;
-                      return (
-                        <tr key={index} className="text-base font-bold">
-                          <td className="py-5 px-2 text-center text-gray-400">{index + 1}</td>
-                          <td className="py-5 px-2">
-                            <div className="font-black text-black text-lg">{item.name}</div>
-                            <div className="text-xs text-gray-500">{item.carat || item.stoneType}</div>
-                          </td>
-                          <td className="py-5 px-2 text-center font-black">{item.selectedQuantity}</td>
-                          <td className="py-5 px-2 text-center font-black">
-                            {Number(item.selectedWeight || 0).toFixed(2)} {item.material === 'jewelry' ? t('carat') : t('gram')}
-                          </td>
-                          <td className="py-5 px-2 text-left font-black text-lg">
-                            {currentPrice.toLocaleString()}
-                          </td>
+                    <div className="bg-[#F8F7F4] rounded-2xl p-5 border border-slate-100">
+                      <div className="text-[9px] font-black text-[#C6A15B] uppercase tracking-widest mb-3">{t('customer')}</div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <UserIcon size={14} className="text-[#6B7280]" />
+                        <span className="text-sm font-black text-[#111827]">{customerName || t('guest_customer')}</span>
+                      </div>
+                      <div className="text-[10px] font-bold text-[#6B7280] opacity-60 italic">{language === 'en' ? 'Valued Client' : 'مشتری گرامی'}</div>
+                    </div>
+
+                    <div className="bg-[#111827] rounded-2xl p-5 border border-[#C6A15B]/20 shadow-lg shadow-[#111827]/10">
+                      <div className="text-[9px] font-black text-[#C6A15B] uppercase tracking-widest mb-3 opacity-80">{t('seller')}</div>
+                      <div className="flex items-center gap-2">
+                        <Store size={14} className="text-[#C6A15B]" />
+                        <span className="text-sm font-black text-white">{sellerDisplayName}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Items Table */}
+                  <div className="flex-1">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b-2 border-[#111827]">
+                          <th className="py-4 px-2 text-[10px] font-black text-[#6B7280] uppercase tracking-widest text-center w-10">#</th>
+                          <th className={`py-4 px-3 text-[10px] font-black text-[#6B7280] uppercase tracking-widest ${isRtl ? 'text-right' : 'text-left'}`}>{t('description')}</th>
+                          <th className="py-4 px-2 text-[10px] font-black text-[#6B7280] uppercase tracking-widest text-center w-20">{t('quantity')}</th>
+                          <th className="py-4 px-2 text-[10px] font-black text-[#6B7280] uppercase tracking-widest text-center w-24">{t('weight')}</th>
+                          <th className={`py-4 px-3 text-[10px] font-black text-[#6B7280] uppercase tracking-widest ${isRtl ? 'text-left' : 'text-right'} w-32`}>{t('unit_price')}</th>
+                          <th className={`py-4 px-3 text-[10px] font-black text-[#111827] uppercase tracking-widest ${isRtl ? 'text-left' : 'text-right'} w-40`}>{t('total_amount')}</th>
                         </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {cart.map((item, index) => {
+                          const rawSuggested = (item.selectedPrice || 0) * (item.material === 'jewelry' ? 1 : (item.selectedWeight || 0)) * (item.selectedQuantity || 1);
+                          const suggestedPrice = parseFloat(Number(rawSuggested).toFixed(2));
+                          const currentPrice = item.manualPrice !== undefined ? item.manualPrice : suggestedPrice;
+                          const unitPrice = item.selectedPrice || 0;
 
-                {/* Totals & Signatures */}
-                <div className="flex justify-between items-start pt-8 border-t-4 border-black">
-                  <div className="grid grid-cols-2 gap-16 text-center pt-4">
-                    <div className="w-48">
-                      <p className="text-sm font-black border-b-2 border-black pb-2 uppercase tracking-tighter">{t('seller_signature')}</p>
-                      <div className="h-24"></div>
-                      <p className="text-base font-black border-t border-gray-200 pt-2">{sellerDisplayName}</p>
-                    </div>
-                    <div className="w-48">
-                      <p className="text-sm font-black border-b-2 border-black pb-2 uppercase tracking-tighter">{t('customer_signature')}</p>
-                    </div>
+                          return (
+                            <tr key={item.id} className="group">
+                              <td className="py-5 px-2 text-center text-xs font-black text-slate-300 font-mono">{index + 1}</td>
+                              <td className="py-5 px-3">
+                                <div className="font-black text-[#111827] text-sm mb-0.5">{item.name}</div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[9px] font-black bg-[#C6A15B]/10 text-[#C6A15B] px-1.5 py-0.5 rounded uppercase tracking-tighter">
+                                    {item.material === 'gold' ? t('gold') : item.material === 'silver' ? t('silver') : t('jewelry')}
+                                  </span>
+                                  <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest border-l border-slate-200 pl-2 ml-1">
+                                    {item.carat || item.stoneType} | {item.code}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="py-5 px-2 text-center text-sm font-black text-[#111827]">{item.selectedQuantity}</td>
+                              <td className="py-5 px-2 text-center text-sm font-bold text-[#6B7280]">
+                                {Number(item.selectedWeight || 0).toFixed(2)} <span className="text-[9px] font-black opacity-40 uppercase">{item.material === 'jewelry' ? t('carat') : t('gram')}</span>
+                              </td>
+                              <td className={`py-5 px-3 ${isRtl ? 'text-left' : 'text-right'} text-xs font-bold text-[#6B7280]`}>
+                                {unitPrice.toLocaleString()}
+                              </td>
+                              <td className={`py-5 px-3 ${isRtl ? 'text-left' : 'text-right'} font-black text-[#111827] text-sm`}>
+                                {currentPrice.toLocaleString()}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
-                  <div className="bg-black text-white p-8 rounded-3xl min-w-[360px] text-left shadow-2xl">
-                    <div className="flex justify-between items-center">
-                      <span className="text-2xl font-black uppercase opacity-60">{t('total_payable')}:</span>
-                      <div className="text-right">
-                        <span className="text-5xl font-black">{(totalAmount || 0).toLocaleString()}</span>
-                        <span className="text-lg font-black mx-2">{t('afghani')}</span>
+
+                  {/* Summary & Signatures Section */}
+                  <div className="mt-12 space-y-12">
+                    <div className="flex justify-between items-end">
+                      {/* Signatures */}
+                      <div className="flex gap-16">
+                        <div className="w-48">
+                          <div className="border-t border-slate-200 pt-3 text-center">
+                            <p className="text-[9px] font-black text-[#6B7280] uppercase tracking-widest mb-1">{t('seller_signature')}</p>
+                            <p className="text-xs font-black text-[#111827]">{sellerDisplayName}</p>
+                          </div>
+                        </div>
+                        <div className="w-48">
+                          <div className="border-t border-slate-200 pt-3 text-center">
+                            <p className="text-[9px] font-black text-[#6B7280] uppercase tracking-widest">{t('customer_signature')}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Summary Card */}
+                      <div className="bg-[#111827] rounded-3xl p-8 min-w-[320px] text-white shadow-2xl shadow-[#111827]/20 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-[#C6A15B]/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                        <div className="relative z-10">
+                          <div className="flex justify-between items-center mb-6 opacity-60">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('total_items')}</span>
+                            <span className="text-sm font-black">{cart.reduce((s, i) => s + i.selectedQuantity, 0)}</span>
+                          </div>
+                          <div className="h-px bg-white/10 mb-6" />
+                          <div className="flex justify-between items-baseline">
+                            <span className="text-[10px] font-black text-[#C6A15B] uppercase tracking-[0.2em]">{t('grand_total')}</span>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-4xl font-black tracking-tighter">{totalAmount.toLocaleString()}</span>
+                              <span className="text-[10px] font-black opacity-60">{t('afghani')}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer Policy */}
+                    <div className="pt-12 border-t border-slate-100">
+                      <div className="text-center max-w-2xl mx-auto">
+                        <p className="text-xs font-bold text-[#6B7280] italic leading-relaxed mb-4">
+                          " {shopInfo.footerText || 'از خرید شما متشکریم!'} "
+                        </p>
+                        <div className="flex items-center justify-center gap-3">
+                          <div className="h-px w-8 bg-slate-200" />
+                          <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">KHAZANA</span>
+                          <div className="h-px w-8 bg-slate-200" />
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-
-                <div className="mt-12 pt-8 border-t-2 border-gray-200 text-center">
-                  <p className="text-lg font-black italic text-gray-700">" {shopInfo.footerText || 'از خرید شما متشکریم!'} "</p>
-                </div>
-
-                <style>{`
-                  @media screen {
-                    .printable-invoice {
-                      display: none;
-                    }
-                  }
-                  @media print {
-                    body * {
-                      visibility: hidden;
-                    }
-                    .printable-invoice, .printable-invoice * {
-                      visibility: visible;
-                    }
-                    .printable-invoice {
-                      display: block !important;
-                      position: absolute !important;
-                      left: 0 !important;
-                      top: 0 !important;
-                      width: 100% !important;
-                      margin: 0 !important;
-                      padding: 20px !important;
-                      background: white !important;
-                    }
-                  }
-                `}</style>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -1125,27 +1174,18 @@ const POS: React.FC = () => {
         </div>
       )}
     <style>{`
-      @media screen {
-        .printable-invoice {
-          display: none;
-        }
-      }
       @media print {
-        body * {
-          visibility: hidden;
+        @page {
+          size: A4;
+          margin: 0;
         }
-        .printable-invoice, .printable-invoice * {
-          visibility: visible;
+        body {
+          margin: 0;
+          -webkit-print-color-adjust: exact;
         }
         .printable-invoice {
-          display: block !important;
-          position: absolute !important;
-          left: 0 !important;
-          top: 0 !important;
-          width: 100% !important;
-          margin: 0 !important;
-          padding: 20px !important;
-          background: white !important;
+          box-shadow: none !important;
+          border: none !important;
         }
       }
     `}</style>
