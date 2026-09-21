@@ -1284,110 +1284,88 @@ const Reports: React.FC = () => {
             </div>
           ) : printingSale && (
             <div 
-              className={`printable-invoice bg-white p-12 relative flex flex-col ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} 
+              className="printable-invoice bg-white mx-auto p-12 flex flex-col" 
               style={{ 
-                direction: isRtl ? 'rtl' : 'ltr', 
+                direction: 'rtl', 
                 minHeight: '297mm', 
-                width: '210mm', 
-                margin: '0 auto',
-                fontFamily: 'Vazirmatn, system-ui, -apple-system, sans-serif',
+                width: '210mm',
+                fontFamily: 'Vazirmatn, system-ui, sans-serif',
                 color: '#111827'
               }}
             >
-              {/* Decorative Accent */}
-              <div className={`absolute top-0 ${isRtl ? 'right-0' : 'left-0'} w-32 h-1 bg-[#C6A15B]`} />
-
-              {/* Header Section */}
-              <div className="flex justify-between items-start mb-12">
-                <div className="flex items-center gap-5">
+              {/* Elegant Header */}
+              <div className="flex justify-between items-start border-b-2 border-[#B8944A]/20 pb-6 mb-6">
+                <div className="flex items-center gap-6">
                   {logo ? (
-                    <div className="w-20 h-20 bg-[#F8F7F4] rounded-2xl flex items-center justify-center p-3 border border-[#C6A15B]/10">
-                      <img src={logo} alt="Logo" className="w-full h-full object-contain" />
-                    </div>
+                    <img src={logo} alt="Logo" className="w-20 h-20 object-contain" />
                   ) : (
-                    <div className="w-20 h-20 bg-[#111827] rounded-2xl flex items-center justify-center border border-[#C6A15B]/20">
-                      <Gem className="text-[#C6A15B]" size={36} />
+                    <div className="w-16 h-16 border-2 border-[#B8944A]/20 flex items-center justify-center rounded-lg bg-[#F8F7F3]">
+                      <Gem size={32} className="text-[#B8944A]" />
                     </div>
                   )}
                   <div>
                     <h1 className="text-3xl font-black tracking-tight text-[#111827] mb-1">{shopInfo.name}</h1>
-                    <p className="text-[#C6A15B] text-xs font-bold uppercase tracking-widest opacity-80">{shopInfo.description}</p>
+                    <p className="text-[#6B7280] text-xs font-bold leading-relaxed">{shopInfo.description}</p>
                   </div>
                 </div>
-                <div className={`text-${isRtl ? 'left' : 'right'} pt-2`}>
-                  <div className="text-[10px] font-black text-[#6B7280] uppercase tracking-[0.3em] mb-1">{t('official_invoice')}</div>
-                  <div className="text-2xl font-black text-[#111827] mb-1">#{printingSale.invoiceNumber}</div>
-                  <div className="text-xs font-bold text-[#6B7280]">{new Date(printingSale.date).toLocaleDateString(language === 'en' ? 'en-US' : 'fa-IR')}</div>
+                <div className="text-left space-y-1">
+                  <h2 className="text-2xl font-black text-[#B8944A] mb-1">فاکتور فروش</h2>
+                  <div className="text-sm font-black text-[#111827]">شماره: #{printingSale.invoiceNumber}</div>
+                  <div className="text-xs font-bold text-[#6B7280]">تاریخ: {new Date(printingSale.date).toLocaleDateString('fa-IR')}</div>
                 </div>
               </div>
 
-              {/* Info Grid (Shop, Customer, Seller) */}
-              <div className="grid grid-cols-3 gap-6 mb-10">
-                <div className="bg-[#F8F7F4] rounded-2xl p-5 border border-slate-100">
-                  <div className="text-[9px] font-black text-[#C6A15B] uppercase tracking-widest mb-3">{t('shop_info')}</div>
-                  <div className="space-y-2">
-                    <div className="flex items-start gap-2">
-                      <MapPin size={12} className="text-[#6B7280] mt-0.5 shrink-0" />
-                      <span className="text-[11px] font-bold text-[#111827] leading-relaxed">{shopInfo.address}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone size={12} className="text-[#6B7280] shrink-0" />
-                      <span className="text-[11px] font-black text-[#111827] font-mono">{shopInfo.phone}</span>
-                    </div>
-                  </div>
+              {/* Contact Info (Horizontal & Delicate) */}
+              <div className="flex flex-wrap items-center gap-x-8 gap-y-2 mb-8 text-[11px] font-bold text-[#6B7280] border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-1.5">
+                  <MapPin size={12} className="text-[#B8944A]" />
+                  <span>{shopInfo.address}</span>
                 </div>
-
-                <div className="bg-[#F8F7F4] rounded-2xl p-5 border border-slate-100">
-                  <div className="text-[9px] font-black text-[#C6A15B] uppercase tracking-widest mb-3">{t('customer')}</div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <UserIcon size={14} className="text-[#6B7280]" />
-                    <span className="text-sm font-black text-[#111827]">{printingSale.customerName || t('guest_customer')}</span>
-                  </div>
-                  <div className="text-[10px] font-bold text-[#6B7280] opacity-60 italic">{language === 'en' ? 'Valued Client' : 'مشتری گرامی'}</div>
-                </div>
-
-                <div className="bg-[#111827] rounded-2xl p-5 border border-[#C6A15B]/20 shadow-lg shadow-[#111827]/10">
-                  <div className="text-[9px] font-black text-[#C6A15B] uppercase tracking-widest mb-3 opacity-80">{t('seller')}</div>
-                  <div className="flex items-center gap-2">
-                    <Store size={14} className="text-[#C6A15B]" />
-                    <span className="text-sm font-black text-white">{printingSale.sellerName}</span>
-                  </div>
+                <div className="flex items-center gap-1.5">
+                  <Phone size={12} className="text-[#B8944A]" />
+                  <span className="font-mono">{shopInfo.phone}</span>
                 </div>
               </div>
 
-              {/* Items Table */}
+              {/* Customer & Seller Info */}
+              <div className="grid grid-cols-2 gap-10 mb-8">
+                <div className="flex gap-2 text-sm">
+                  <span className="font-black text-[#B8944A]">مشتری:</span>
+                  <span className="font-bold text-[#111827]">{printingSale.customerName || 'مشتری مهمان'}</span>
+                </div>
+                <div className="flex gap-2 text-sm text-left justify-end">
+                  <span className="font-black text-[#B8944A]">فروشنده:</span>
+                  <span className="font-bold text-[#111827]">{printingSale.sellerName}</span>
+                </div>
+              </div>
+
+              {/* Items Table (The Core) */}
               <div className="flex-1">
                 <table className="w-full border-collapse">
                   <thead>
-                    <tr className="border-b-2 border-[#111827]">
-                      <th className="py-4 px-2 text-[10px] font-black text-[#6B7280] uppercase tracking-widest text-center w-10">#</th>
-                      <th className={`py-4 px-3 text-[10px] font-black text-[#6B7280] uppercase tracking-widest ${isRtl ? 'text-right' : 'text-left'}`}>{t('description')}</th>
-                      <th className="py-4 px-2 text-[10px] font-black text-[#6B7280] uppercase tracking-widest text-center w-20">{t('quantity')}</th>
-                      <th className="py-4 px-2 text-[10px] font-black text-[#6B7280] uppercase tracking-widest text-center w-24">{t('weight')}</th>
-                      <th className={`py-4 px-3 text-[10px] font-black text-[#111827] uppercase tracking-widest ${isRtl ? 'text-left' : 'text-right'} w-40`}>{t('total_amount')}</th>
+                    <tr className="bg-[#F8F7F3] border-y border-[#B8944A]/20">
+                      <th className="py-3 px-2 text-[10px] font-black text-[#6B7280] text-center w-8">ردیف</th>
+                      <th className="py-3 px-3 text-[10px] font-black text-[#6B7280] text-right">شرح کالا</th>
+                      <th className="py-3 px-2 text-[10px] font-black text-[#6B7280] text-center w-24">کد کالا</th>
+                      <th className="py-3 px-2 text-[10px] font-black text-[#6B7280] text-center w-20">عیار / سنگ</th>
+                      <th className="py-3 px-2 text-[10px] font-black text-[#6B7280] text-center w-12">تعداد</th>
+                      <th className="py-3 px-2 text-[10px] font-black text-[#6B7280] text-center w-20">وزن</th>
+                      <th className="py-3 px-3 text-[10px] font-black text-[#111827] text-left w-32">مبلغ کل</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {printingSale.items.map((item, index) => {
                       return (
-                        <tr key={index} className="group">
-                          <td className="py-5 px-2 text-center text-xs font-black text-slate-300 font-mono">{index + 1}</td>
-                          <td className="py-5 px-3">
-                            <div className="font-black text-[#111827] text-sm mb-0.5">{item.name}</div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-[9px] font-black bg-[#C6A15B]/10 text-[#C6A15B] px-1.5 py-0.5 rounded uppercase tracking-tighter">
-                                {item.material === 'gold' ? t('gold') : item.material === 'silver' ? t('silver') : t('jewelry')}
-                              </span>
-                              <span className="text-[9px] font-bold text-[#6B7280] uppercase tracking-widest border-l border-slate-200 pl-2 ml-1">
-                                {item.carat || item.stoneType} | {item.code}
-                              </span>
-                            </div>
+                        <tr key={index} className="text-xs">
+                          <td className="py-4 px-2 text-center text-slate-300 font-mono">{index + 1}</td>
+                          <td className="py-4 px-3 font-black text-[#111827]">{item.name}</td>
+                          <td className="py-4 px-2 text-center font-bold text-slate-400 font-mono">{item.code}</td>
+                          <td className="py-4 px-2 text-center font-bold text-slate-600">{item.carat || item.stoneType}</td>
+                          <td className="py-4 px-2 text-center font-black text-[#111827]">{item.quantity}</td>
+                          <td className="py-4 px-2 text-center font-bold text-[#6B7280]">
+                            {Number(item.weight || 0).toFixed(2)} <span className="text-[10px] text-slate-300">گرم</span>
                           </td>
-                          <td className="py-5 px-2 text-center text-sm font-black text-[#111827]">{item.quantity}</td>
-                          <td className="py-5 px-2 text-center text-sm font-bold text-[#6B7280]">
-                            {Number(item.weight || 0).toFixed(2)} <span className="text-[9px] font-black opacity-40 uppercase">{item.material === 'jewelry' ? t('carat') : t('gram')}</span>
-                          </td>
-                          <td className={`py-5 px-3 ${isRtl ? 'text-left' : 'text-right'} font-black text-[#111827] text-sm`}>
+                          <td className="py-4 px-3 text-left font-black text-[#111827] font-mono">
                             {(item.totalAmount || 0).toLocaleString()}
                           </td>
                         </tr>
@@ -1395,59 +1373,40 @@ const Reports: React.FC = () => {
                     })}
                   </tbody>
                 </table>
+
+                {/* Summary Section (Immediately after table) */}
+                <div className="mt-8 flex justify-between items-start">
+                  <div className="text-xs font-bold text-slate-400">
+                    تعداد کل اجناس: <span className="text-[#111827]">{printingSale.items.reduce((sum, i) => sum + i.quantity, 0)}</span>
+                  </div>
+                  <div className="bg-[#111827] text-white rounded-xl p-6 min-w-[280px] shadow-lg border-b-4 border-[#B8944A]">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-black text-[#B8944A] uppercase tracking-widest">مبلغ قابل پرداخت</span>
+                      <span className="text-xs font-bold opacity-60">افغانی</span>
+                    </div>
+                    <div className="text-3xl font-black text-right tracking-tight">
+                      {(printingSale.totalAmount || 0).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Summary & Signatures Section */}
-              <div className="mt-12 space-y-12">
-                <div className="flex justify-between items-end">
-                  {/* Signatures */}
-                  <div className="flex gap-16">
-                    <div className="w-48">
-                      <div className="border-t border-slate-200 pt-3 text-center">
-                        <p className="text-[9px] font-black text-[#6B7280] uppercase tracking-widest mb-1">{t('seller_signature')}</p>
-                        <p className="text-xs font-black text-[#111827]">{printingSale.sellerName}</p>
-                      </div>
-                    </div>
-                    <div className="w-48">
-                      <div className="border-t border-slate-200 pt-3 text-center">
-                        <p className="text-[9px] font-black text-[#6B7280] uppercase tracking-widest">{t('customer_signature')}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Summary Card */}
-                  <div className="bg-[#111827] rounded-3xl p-8 min-w-[320px] text-white shadow-2xl shadow-[#111827]/20 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#C6A15B]/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-                    <div className="relative z-10">
-                      <div className="flex justify-between items-center mb-6 opacity-60">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">{t('total_items')}</span>
-                        <span className="text-sm font-black">{printingSale.items.reduce((s, i) => s + i.quantity, 0)}</span>
-                      </div>
-                      <div className="h-px bg-white/10 mb-6" />
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-[10px] font-black text-[#C6A15B] uppercase tracking-[0.2em]">{t('grand_total')}</span>
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-4xl font-black tracking-tighter">{(printingSale.totalAmount || 0).toLocaleString()}</span>
-                          <span className="text-[10px] font-black opacity-60">{t('afghani')}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+              {/* Signatures */}
+              <div className="grid grid-cols-2 gap-20 mt-20 mb-16">
+                <div className="border-t border-slate-200 pt-3 text-center">
+                  <p className="text-[10px] font-black text-[#6B7280] uppercase tracking-widest mb-1">امضای فروشنده</p>
+                  <p className="text-xs font-black text-[#111827]">{printingSale.sellerName}</p>
                 </div>
-
-                {/* Footer Policy */}
-                <div className="pt-12 border-t border-slate-100">
-                  <div className="text-center max-w-2xl mx-auto">
-                    <p className="text-xs font-bold text-[#6B7280] italic leading-relaxed mb-4">
-                      " {shopInfo.footerText || 'از خرید شما متشکریم!'} "
-                    </p>
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="h-px w-8 bg-slate-200" />
-                      <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">KHAZANA</span>
-                      <div className="h-px w-8 bg-slate-200" />
-                    </div>
-                  </div>
+                <div className="border-t border-slate-200 pt-3 text-center">
+                  <p className="text-[10px] font-black text-[#6B7280] uppercase tracking-widest mb-1">امضای مشتری</p>
+                  <div className="h-10"></div>
                 </div>
+              </div>
+
+              {/* Footer Policy */}
+              <div className="mt-auto pt-8 border-t border-slate-50 text-center">
+                <p className="text-xs font-bold italic text-[#6B7280] mb-4">" {shopInfo.footerText || 'از خرید شما متشکریم!'} "</p>
+                <div className="text-[10px] font-black text-slate-200 tracking-[0.6em] uppercase">KHAZANA</div>
               </div>
             </div>
           )}
