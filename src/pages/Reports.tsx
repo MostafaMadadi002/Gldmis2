@@ -491,11 +491,19 @@ const Reports: React.FC = () => {
                   const hasSales = sales.some(s => toISODate(s.date) === dStr);
                   const hasExpenses = expensesList.some(e => toISODate(e.date) === dStr);
 
+                  const dayNetProfit = useMemo(() => {
+                    const daySales = sales.filter(s => toISODate(s.date) === dStr);
+                    const dayExpenses = expensesList.filter(e => toISODate(e.date) === dStr);
+                    const gross = daySales.reduce((sum, s) => sum + calculateSaleProfit(s, products).profit, 0);
+                    const expTotal = dayExpenses.reduce((sum, e) => sum + e.amount, 0);
+                    return gross - expTotal;
+                  }, [dStr, sales, expensesList, products]);
+
                   return (
                     <button
                       key={idx}
                       onClick={() => handleSelectDate(date)}
-                      className={`h-9 rounded-xl flex flex-col items-center justify-center relative font-bold text-xs transition-all ${
+                      className={`h-12 rounded-xl flex flex-col items-center justify-center relative font-bold text-xs transition-all ${
                         isSelected 
                           ? 'bg-kh-gold text-white font-black shadow-md' 
                           : isToday 
@@ -503,8 +511,15 @@ const Reports: React.FC = () => {
                             : 'hover:bg-kh-bg dark:hover:bg-white/5 text-kh-text dark:text-dark-text'
                       }`}
                     >
-                      <span>{language === 'en' ? date.getDate() : moment(date).jDate()}</span>
-                      <div className="flex items-center gap-0.5 absolute bottom-1">
+                      <span className="text-sm">{language === 'en' ? date.getDate() : moment(date).jDate()}</span>
+                      
+                      {dayNetProfit !== 0 && (
+                        <span className={`text-[8px] font-black mt-0.5 leading-none ${isSelected ? 'text-white' : dayNetProfit > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          {dayNetProfit > 0 ? '+' : ''}{Math.round(dayNetProfit / 1000)}k
+                        </span>
+                      )}
+
+                      <div className="flex items-center gap-0.5 absolute bottom-0.5">
                         {hasSales && <span className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-emerald-500'}`}></span>}
                         {hasExpenses && <span className={`w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-rose-500'}`}></span>}
                       </div>
@@ -513,7 +528,29 @@ const Reports: React.FC = () => {
                 })}
               </div>
 
-              <div className="mt-6 pt-4 border-t border-kh-card/5 dark:border-dark-border flex gap-2">
+              <div className="mt-6 p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/20 flex justify-between items-center">
+                <div className="text-xs font-black text-emerald-700 dark:text-emerald-400 uppercase">
+                  {language === 'en' ? 'Profit This Month' : 'سود خالص این ماه'}
+                </div>
+                <div className="text-lg font-black text-emerald-600 dark:text-emerald-400">
+                  {(() => {
+                    const monthSales = sales.filter(s => {
+                      const d = new Date(s.date);
+                      return d.getMonth() === currentCalendarMonth.getMonth() && d.getFullYear() === currentCalendarMonth.getFullYear();
+                    });
+                    const monthExpenses = expensesList.filter(e => {
+                      const d = new Date(e.date);
+                      return d.getMonth() === currentCalendarMonth.getMonth() && d.getFullYear() === currentCalendarMonth.getFullYear();
+                    });
+                    const gross = monthSales.reduce((sum, s) => sum + calculateSaleProfit(s, products).profit, 0);
+                    const expTotal = monthExpenses.reduce((sum, e) => sum + e.amount, 0);
+                    return (gross - expTotal).toLocaleString();
+                  })()}
+                  <span className="text-[10px] mr-1 opacity-60 font-normal">{t('afghani')}</span>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-kh-card/5 dark:border-dark-border flex gap-2">
                 <button
                   onClick={() => {
                     setSelectedDate(todayDateStr);
@@ -1242,79 +1279,69 @@ const Reports: React.FC = () => {
               </div>
             </div>
           ) : printingSale && (
-            <div className={`p-10 font-serif border-[12px] border-double border-black ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} style={{ direction: isRtl ? 'rtl' : 'ltr', minHeight: '297mm' }}>
-              {/* Official Invoice Layout */}
-              <div className="flex justify-between items-start border-b-4 border-black pb-8 mb-8">
-                <div className={`flex items-center gap-8 ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}>
+            <div className={`p-10 font-sans border-0 ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} style={{ direction: isRtl ? 'rtl' : 'ltr', minHeight: '297mm' }}>
+              {/* Header */}
+              <div className="flex flex-col items-center border-b-4 border-black pb-6 mb-8 text-center">
+                <div className="flex flex-col items-center gap-4 mb-4">
                   {logo ? (
-                    <img src={logo} alt="Shop Logo" className="w-28 h-28 object-contain border-2 border-black p-1" />
+                    <img src={logo} alt="Shop Logo" className="w-24 h-24 object-contain" />
                   ) : (
-                    <div className="w-28 h-28 border-2 border-black flex items-center justify-center bg-gray-50">
-                      <Gem size={56} className="text-black" />
+                    <div className="w-20 h-20 border-2 border-black flex items-center justify-center rounded-2xl">
+                      <Gem size={48} className="text-black" />
                     </div>
                   )}
-                  <div className={isRtl ? 'text-right' : 'text-left'}>
-                    <h1 className="text-5xl font-black mb-2 tracking-tight">{shopInfo.name}</h1>
+                  <div>
+                    <h1 className="text-4xl font-black mb-1 tracking-tight">{shopInfo.name}</h1>
                     <p className="text-lg font-bold text-gray-700 leading-tight">{shopInfo.description}</p>
                   </div>
                 </div>
-                <div className={isRtl ? 'text-left' : 'text-right'}>
-                  <div className="text-3xl font-black mb-3 border-b-4 border-black pb-1 inline-block uppercase tracking-wider">{t('official_invoice')}</div>
-                  <div className="space-y-1">
-                    <div className="text-sm font-black text-gray-900">{t('invoice_no')}: <span className="text-xl">#{printingSale.invoiceNumber}</span></div>
-                    <div className="text-sm font-bold text-gray-700">{t('date')}: <span className="font-black text-black">{new Date(printingSale.date).toLocaleDateString(language === 'en' ? 'en-US' : 'fa-IR')}</span></div>
+                <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm font-black border-t border-black/10 pt-4 w-full">
+                  <div className="flex items-center gap-2">
+                    <span className="opacity-60">{t('phone')}:</span>
+                    <span className="font-mono">{shopInfo.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="opacity-60">{t('address')}:</span>
+                    <span>{shopInfo.address}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-12 mb-10 border-b-2 border-black pb-8">
-                <div className={`space-y-4 ${isRtl ? 'text-right' : 'text-left'}`}>
-                  <div className="flex items-end gap-3 border-b border-gray-300 pb-1">
-                    <span className="text-sm font-black text-gray-500 uppercase min-w-[100px]">{t('customer_name')}:</span>
-                    <span className="text-xl font-black text-black flex-1">{printingSale.customerName || t('guest_customer')}</span>
-                  </div>
-                  <div className="flex items-end gap-3 border-b border-gray-300 pb-1">
-                    <span className="text-sm font-black text-gray-500 uppercase min-w-[100px]">{t('seller')}:</span>
-                    <span className="text-xl font-black text-black flex-1">{printingSale.sellerName}</span>
-                  </div>
+              <div className="flex justify-between items-center mb-8 bg-gray-50 p-4 border-2 border-black rounded-2xl">
+                <div className="space-y-1">
+                  <div className="text-sm font-black text-gray-900">{t('invoice_no')}: <span className="text-xl">#{printingSale.invoiceNumber}</span></div>
+                  <div className="text-sm font-bold text-gray-700">{t('date')}: <span className="font-black text-black">{new Date(printingSale.date).toLocaleDateString(language === 'en' ? 'en-US' : 'fa-IR')}</span></div>
                 </div>
-                <div className={`space-y-1 pt-2 ${isRtl ? 'text-left' : 'text-right'}`}>
-                  <div className="text-sm font-black text-gray-900">{shopInfo.address}</div>
-                  <div className="text-base font-black text-black font-mono">{shopInfo.phone}</div>
+                <div className="text-right">
+                  <div className="text-sm font-black text-gray-500 uppercase">{t('customer_name')}:</div>
+                  <div className="text-xl font-black">{printingSale.customerName || t('guest_customer')}</div>
                 </div>
               </div>
 
-              <table className={`w-full border-collapse mb-10 ${isRtl ? 'text-right' : 'text-left'}`}>
+              <table className="w-full border-collapse mb-10">
                 <thead>
-                  <tr className={`border-b-2 border-black text-[11px] font-black text-gray-600 uppercase ${isRtl ? 'text-right' : 'text-left'}`}>
-                    <th className="py-3 px-3 w-12 text-center">#</th>
-                    <th className="py-3 px-3">{t('description')}</th>
-                    <th className="py-3 px-3 text-center">{t('code')}</th>
-                    <th className="py-3 px-3 text-center">{t('quantity')}</th>
-                    <th className="py-3 px-3 text-center">{t('weight')}/{t('carat')}</th>
-                    <th className={`py-3 px-3 ${isRtl ? 'text-left' : 'text-right'}`}>{t('unit_price')}</th>
-                    <th className={`py-3 px-3 ${isRtl ? 'text-left' : 'text-right'}`}>{t('total_amount')}</th>
+                  <tr className="border-b-4 border-black text-sm font-black text-black uppercase">
+                    <th className="py-4 px-2 w-12 text-center">#</th>
+                    <th className="py-4 px-2 text-right">{t('description')}</th>
+                    <th className="py-4 px-2 text-center">{t('quantity')}</th>
+                    <th className="py-4 px-2 text-center">{t('weight')}</th>
+                    <th className="py-4 px-2 text-left">{t('total_amount')} ({t('afghani')})</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y-2 divide-gray-200">
+                <tbody className="divide-y-2 divide-black/10">
                   {printingSale.items.map((item, index) => {
-                    const unitPrice = (item.totalAmount || 0) / (item.quantity * (item.material === 'jewelry' ? 1 : item.weight || 1));
                     return (
-                      <tr key={index} className="text-base font-medium">
-                        <td className="py-4 px-3 text-center text-gray-400 font-bold">{index + 1}</td>
-                        <td className="py-4 px-3">
-                          <div className="font-black text-black text-lg leading-tight">{item.name}</div>
-                          <div className="text-xs font-bold text-gray-500 mt-0.5">{item.carat || item.stoneType || ''}</div>
+                      <tr key={index} className="text-base font-bold">
+                        <td className="py-5 px-2 text-center text-gray-400">{index + 1}</td>
+                        <td className="py-5 px-2">
+                          <div className="font-black text-black text-lg">{item.name}</div>
+                          <div className="text-xs text-gray-500">{item.carat || item.stoneType}</div>
                         </td>
-                        <td className="py-4 px-3 text-center font-mono text-xs font-bold bg-gray-50">{item.code || '-'}</td>
-                        <td className="py-4 px-3 text-center font-black text-lg">{item.quantity}</td>
-                        <td className="py-4 px-3 text-center font-black text-lg">
-                          {(item.weight || 0).toFixed(2)} <span className="text-xs">{item.material === 'jewelry' ? t('carat') : t('gram_short')}</span>
+                        <td className="py-5 px-2 text-center font-black">{item.quantity}</td>
+                        <td className="py-5 px-2 text-center font-black">
+                          {Number(item.weight || 0).toFixed(2)} {item.material === 'jewelry' ? t('carat') : t('gram')}
                         </td>
-                        <td className={`py-4 px-3 font-bold text-gray-700 ${isRtl ? 'text-left' : 'text-right'}`}>
-                          {(unitPrice || 0).toLocaleString()}
-                        </td>
-                        <td className={`py-4 px-3 font-black text-black text-lg ${isRtl ? 'text-left' : 'text-right'}`}>
+                        <td className="py-5 px-2 text-left font-black text-lg">
                           {(item.totalAmount || 0).toLocaleString()}
                         </td>
                       </tr>
@@ -1323,30 +1350,30 @@ const Reports: React.FC = () => {
                 </tbody>
               </table>
 
-              <div className={`flex justify-between items-start pt-8 border-t-4 border-black ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}>
-                <div className="grid grid-cols-2 gap-16 text-center pt-4">
+              <div className="flex justify-between items-start pt-8 border-t-4 border-black">
+                <div className="grid grid-cols-2 gap-16 text-center">
                   <div className="w-48">
-                    <p className="text-sm font-black border-b-2 border-black pb-2 uppercase tracking-tighter">{t('seller_signature')}</p>
+                    <p className="text-sm font-black border-b-2 border-black pb-2 uppercase">{t('seller_signature')}</p>
                     <div className="h-24"></div>
                     <p className="text-base font-black border-t border-gray-200 pt-2">{printingSale.sellerName}</p>
                   </div>
                   <div className="w-48">
-                    <p className="text-sm font-black border-b-2 border-black pb-2 uppercase tracking-tighter">{t('customer_signature')}</p>
+                    <p className="text-sm font-black border-b-2 border-black pb-2 uppercase">{t('customer_signature')}</p>
                   </div>
                 </div>
-                <div className={`bg-gray-50 p-8 rounded-3xl min-w-[360px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${isRtl ? 'text-right' : 'text-left'}`}>
-                  <div className={`flex justify-between items-center text-black ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}>
-                    <span className="text-2xl font-black uppercase">{t('total_payable')}:</span>
-                    <div className={isRtl ? 'text-right' : 'text-left'}>
-                      <span className="text-5xl font-black font-mono">{(printingSale.totalAmount || 0).toLocaleString()}</span>
-                      <span className="text-lg font-black mx-2 text-gray-600">{t('afghani')}</span>
+                <div className="bg-black text-white p-8 rounded-3xl min-w-[360px] text-left shadow-2xl">
+                  <div className="flex justify-between items-center">
+                    <span className="text-2xl font-black uppercase opacity-60">{t('total_payable')}:</span>
+                    <div className="text-right">
+                      <span className="text-5xl font-black">{(printingSale.totalAmount || 0).toLocaleString()}</span>
+                      <span className="text-lg font-black mx-2">{t('afghani')}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-12 pt-8 border-t-2 border-gray-200 text-center">
-                <p className="text-base font-black mb-4 italic text-gray-700">" {shopInfo.footerText} "</p>
+              <div className="mt-20 pt-8 border-t-2 border-gray-200 text-center">
+                <p className="text-lg font-black italic text-gray-700">" {shopInfo.footerText || 'از خرید شما متشکریم!'} "</p>
               </div>
             </div>
           )}

@@ -779,177 +779,104 @@ const POS: React.FC = () => {
             {/* Unified Printable Invoice */}
             <div className="hidden print:block fixed inset-0 z-[999] bg-white text-black p-0 overflow-visible">
               {cart.length > 0 && (
-                <div className={`printable-invoice bg-white text-black p-10 font-serif border-[12px] border-double border-black ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} style={{ direction: isRtl ? 'rtl' : 'ltr', minHeight: '297mm' }}>
+                <div className={`printable-invoice bg-white text-black p-10 font-sans ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} style={{ direction: isRtl ? 'rtl' : 'ltr', minHeight: '297mm' }}>
                 {/* Header */}
-                <div className="flex justify-between items-start border-b-4 border-black pb-8 mb-8">
-                  <div className={`flex items-center gap-8 ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}>
+                <div className="flex flex-col items-center border-b-4 border-black pb-6 mb-8 text-center">
+                  <div className="flex flex-col items-center gap-4 mb-4">
                     {logo ? (
-                      <img src={logo} alt="Shop Logo" className="w-28 h-28 object-contain border-2 border-black p-1" />
+                      <img src={logo} alt="Shop Logo" className="w-24 h-24 object-contain" />
                     ) : (
-                      <div className="w-28 h-28 border-2 border-black flex items-center justify-center bg-gray-50">
-                        <Gem size={56} className="text-black" />
+                      <div className="w-20 h-20 border-2 border-black flex items-center justify-center rounded-2xl">
+                        <Gem size={48} className="text-black" />
                       </div>
                     )}
-                    <div className={isRtl ? 'text-right' : 'text-left'}>
-                      <h1 className="text-5xl font-black mb-2 tracking-tight">{shopInfo.name}</h1>
+                    <div>
+                      <h1 className="text-4xl font-black mb-1 tracking-tight">{shopInfo.name}</h1>
                       <p className="text-lg font-bold text-gray-700 leading-tight">{shopInfo.description}</p>
                     </div>
                   </div>
-                  <div className={isRtl ? 'text-left' : 'text-right'}>
-                    <div className="text-3xl font-black mb-3 border-b-4 border-black pb-1 inline-block uppercase tracking-wider">{t('official_invoice')}</div>
-                    <div className="space-y-1">
-                      <div className="text-sm font-black text-gray-900">{t('invoice_no')}: <span className="text-xl">#{currentInvoiceNum}</span></div>
-                      <div className="text-sm font-bold text-gray-700">{t('date')}: <span className="font-black text-black">{new Date().toLocaleDateString(language === 'en' ? 'en-US' : 'fa-IR')}</span></div>
+                  <div className="flex flex-wrap justify-center gap-x-8 gap-y-2 text-sm font-black border-t border-black/10 pt-4 w-full">
+                    <div className="flex items-center gap-2">
+                      <span className="opacity-60">{t('phone')}:</span>
+                      <span className="font-mono">{shopInfo.phone}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="opacity-60">{t('address')}:</span>
+                      <span>{shopInfo.address}</span>
                     </div>
                   </div>
                 </div>
 
-                {/* Info Section */}
-                <div className="grid grid-cols-2 gap-12 mb-10 border-b-2 border-black pb-8">
-                  <div className={`space-y-4 ${isRtl ? 'text-right' : 'text-left'}`}>
-                    <div className="flex items-end gap-3 border-b border-gray-300 pb-1">
-                      <span className="text-sm font-black text-gray-500 uppercase min-w-[100px]">{t('customer_name')}:</span>
-                      <span className="text-xl font-black text-black flex-1">{customerName || t('guest_customer')}</span>
-                    </div>
-                    <div className="flex items-end gap-3 border-b border-gray-300 pb-1">
-                      <span className="text-sm font-black text-gray-500 uppercase min-w-[100px]">{t('seller')}:</span>
-                      <span className="text-xl font-black text-black flex-1">{user?.first_name ? `${user.first_name} ${user.last_name || ''}` : (user?.username || (language === 'en' ? 'System Admin' : 'مدیر سیستم'))}</span>
-                    </div>
+                <div className="flex justify-between items-center mb-8 bg-gray-50 p-4 border-2 border-black rounded-2xl">
+                  <div className="space-y-1">
+                    <div className="text-sm font-black text-gray-900">{t('invoice_no')}: <span className="text-xl">#{currentInvoiceNum}</span></div>
+                    <div className="text-sm font-bold text-gray-700">{t('date')}: <span className="font-black text-black">{new Date().toLocaleDateString(language === 'en' ? 'en-US' : 'fa-IR')}</span></div>
                   </div>
-                  <div className={`space-y-2 pt-2 ${isRtl ? 'text-left' : 'text-right'}`}>
-                    <div className="text-base font-black text-gray-900 flex items-start gap-2 justify-end">
-                      <span className="max-w-[250px]">{shopInfo.address}</span>
-                      <Building size={18} className="mt-1 opacity-50" />
-                    </div>
-                    <div className="text-lg font-black text-black flex items-center gap-2 justify-end font-mono">
-                      <span>{shopInfo.phone}</span>
-                      <Phone size={18} className="opacity-50" />
-                    </div>
+                  <div className="text-right">
+                    <div className="text-sm font-black text-gray-500 uppercase">{t('customer_name')}:</div>
+                    <div className="text-xl font-black">{customerName || t('guest_customer')}</div>
                   </div>
                 </div>
 
-                {/* Items Table */}
-                <div className="mb-12 flex-1">
-                  {['gold', 'silver', 'jewelry', 'other'].map((mat) => {
-                    const items = cart.filter(i => {
-                      if (mat === 'other') return !['gold', 'silver', 'jewelry'].includes(i.material);
-                      return i.material === mat;
-                    });
-                    if (items.length === 0) return null;
-                    
-                    const totalWeight = items.reduce((sum, i) => sum + (Number(i.selectedWeight || 0) * i.selectedQuantity), 0);
-
-                    return (
-                      <div key={mat} className="mb-8">
-                        <div className={`bg-gray-900 text-white px-6 py-2 border-black mb-3 flex justify-between items-center ${isRtl ? 'flex-row-reverse' : 'flex-row'}`}>
-                          <h3 className="text-sm font-black uppercase tracking-widest">
-                            {mat === 'gold' ? t('gold') : mat === 'silver' ? t('silver') : mat === 'jewelry' ? t('jewelry') : t('other')}
-                          </h3>
-                          <span className="text-[10px] font-bold opacity-80 italic">
-                            {language === 'en' ? 'Subtotal Weight' : 'مجموع وزن بخش'}: {totalWeight.toFixed(2)} {mat === 'jewelry' ? t('carat') : t('gram_short')}
-                          </span>
-                        </div>
-                        <table className={`w-full border-collapse ${isRtl ? 'text-right' : 'text-left'}`}>
-                          <thead>
-                            <tr className={`border-b-2 border-black text-[11px] font-black text-gray-600 uppercase ${isRtl ? 'text-right' : 'text-left'}`}>
-                              <th className="py-3 px-3 w-12 text-center">#</th>
-                              <th className="py-3 px-3">{t('description')}</th>
-                              <th className="py-3 px-3 text-center">{t('code')}</th>
-                              <th className="py-3 px-3 text-center">{t('quantity')}</th>
-                              <th className="py-3 px-3 text-center">{t('weight')}/{t('carat')}</th>
-                              <th className={`py-3 px-3 ${isRtl ? 'text-left' : 'text-right'}`}>{t('unit_price')}</th>
-                              <th className={`py-3 px-3 ${isRtl ? 'text-left' : 'text-right'}`}>{t('total_amount')}</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y-2 divide-gray-200">
-                            {items.map((item, index) => {
-                              let unitPrice = item.selectedPrice;
-                              if (item.manualPrice !== undefined) {
-                                const divisor = (item.material === 'jewelry' ? 1 : item.selectedWeight) * item.selectedQuantity;
-                                unitPrice = divisor > 0 ? item.manualPrice / divisor : 0;
-                              }
-                              const totalPrice = (item.manualPrice !== undefined) ? item.manualPrice : (unitPrice * item.selectedQuantity * (item.material === 'jewelry' ? 1 : item.selectedWeight));
-                              
-                              return (
-                                <tr key={index} className="text-base font-medium">
-                                  <td className="py-4 px-3 text-center text-gray-400 font-bold">{index + 1}</td>
-                                  <td className="py-4 px-3">
-                                    <div className="font-black text-black text-lg leading-tight">{item.name}</div>
-                                    <div className="text-xs font-bold text-gray-500 mt-0.5">{item.carat || item.stoneType || ''}</div>
-                                  </td>
-                                  <td className="py-4 px-3 text-center font-mono text-xs font-bold bg-gray-50">{item.code}</td>
-                                  <td className="py-4 px-3 text-center font-black text-lg">{item.selectedQuantity}</td>
-                                  <td className="py-4 px-3 text-center font-black text-lg">
-                                    {Number(item.selectedWeight || 0).toFixed(2)} <span className="text-xs">{item.material === 'jewelry' ? t('carat') : t('gram_short')}</span>
-                                  </td>
-                                  <td className={`py-4 px-3 font-bold text-gray-700 ${isRtl ? 'text-left' : 'text-right'}`}>
-                                    {(unitPrice || 0).toLocaleString()}
-                                  </td>
-                                  <td className={`py-4 px-3 font-black text-black text-lg ${isRtl ? 'text-left' : 'text-right'}`}>
-                                    {(totalPrice || 0).toLocaleString()}
-                                  </td>
-                                </tr>
-                              );
-                            })}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })}
-                </div>
+                <table className="w-full border-collapse mb-10">
+                  <thead>
+                    <tr className="border-b-4 border-black text-sm font-black text-black uppercase">
+                      <th className="py-4 px-2 w-12 text-center">#</th>
+                      <th className="py-4 px-2 text-right">{t('description')}</th>
+                      <th className="py-4 px-2 text-center">{t('quantity')}</th>
+                      <th className="py-4 px-2 text-center">{t('weight')}</th>
+                      <th className="py-4 px-2 text-left">{t('total_amount')} ({t('afghani')})</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y-2 divide-black/10">
+                    {cart.map((item, index) => {
+                      const rawSuggested = (item.selectedPrice || 0) * (item.material === 'jewelry' ? 1 : (item.selectedWeight || 0)) * (item.selectedQuantity || 1);
+                      const currentPrice = item.manualPrice !== undefined ? item.manualPrice : rawSuggested;
+                      return (
+                        <tr key={index} className="text-base font-bold">
+                          <td className="py-5 px-2 text-center text-gray-400">{index + 1}</td>
+                          <td className="py-5 px-2">
+                            <div className="font-black text-black text-lg">{item.name}</div>
+                            <div className="text-xs text-gray-500">{item.carat || item.stoneType}</div>
+                          </td>
+                          <td className="py-5 px-2 text-center font-black">{item.selectedQuantity}</td>
+                          <td className="py-5 px-2 text-center font-black">
+                            {Number(item.selectedWeight || 0).toFixed(2)} {item.material === 'jewelry' ? t('carat') : t('gram')}
+                          </td>
+                          <td className="py-5 px-2 text-left font-black text-lg">
+                            {currentPrice.toLocaleString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
 
                 {/* Totals & Signatures */}
-                <div className="mt-auto">
-                  <div className={`flex justify-between items-stretch gap-10 pt-10 border-t-4 border-black ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}>
-                    {/* Signatures */}
-                    <div className="flex-1 grid grid-cols-2 gap-12 text-center pt-2">
-                      <div className="flex flex-col justify-between">
-                        <p className="text-sm font-black border-b-2 border-black pb-2 uppercase tracking-tighter">{t('seller_signature')}</p>
-                        <div className="h-24 flex items-center justify-center italic text-gray-300">Signature</div>
-                        <p className="text-base font-black border-t border-gray-200 pt-2">{user?.first_name ? `${user.first_name} ${user.last_name || ''}` : (user?.username || (language === 'en' ? 'System Admin' : 'مدیر سیستم'))}</p>
-                      </div>
-                      <div className="flex flex-col justify-between">
-                        <p className="text-sm font-black border-b-2 border-black pb-2 uppercase tracking-tighter">{t('customer_signature')}</p>
-                        <div className="h-24 flex items-center justify-center italic text-gray-300">Seal/Signature</div>
-                      </div>
+                <div className="flex justify-between items-start pt-8 border-t-4 border-black">
+                  <div className="grid grid-cols-2 gap-16 text-center pt-4">
+                    <div className="w-48">
+                      <p className="text-sm font-black border-b-2 border-black pb-2 uppercase tracking-tighter">{t('seller_signature')}</p>
+                      <div className="h-24"></div>
+                      <p className="text-base font-black border-t border-gray-200 pt-2">{sellerDisplayName}</p>
                     </div>
-                    
-                    {/* Summary Card */}
-                    <div className={`bg-gray-50 p-8 rounded-3xl min-w-[360px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${isRtl ? 'text-right' : 'text-left'}`}>
-                      <div className="space-y-4 divide-y divide-gray-300">
-                        <div className={`flex justify-between items-center pb-3 text-gray-700 ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}>
-                          <span className="text-base font-black uppercase">{t('total')} {t('items')}:</span>
-                          <span className="text-xl font-black">{cart.reduce((sum, i) => sum + i.selectedQuantity, 0)} {t('product_name')}</span>
-                        </div>
-                        <div className={`flex justify-between items-center py-4 text-black ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}>
-                          <span className="text-2xl font-black uppercase">{t('total_payable')}:</span>
-                          <div className={isRtl ? 'text-right' : 'text-left'}>
-                            <span className="text-5xl font-black font-mono">{(totalAmount || 0).toLocaleString()}</span>
-                            <span className="text-lg font-black mx-2 text-gray-600">{t('afghani')}</span>
-                          </div>
-                        </div>
-                        <div className="pt-4">
-                           <p className="text-[10px] font-black text-gray-400 italic text-center uppercase leading-tight">
-                             {language === 'en' 
-                               ? 'Amount in words: One Hundred Twenty Thousand Afghanis Only' 
-                               : 'مبلغ به حروف: طبق ارقام فوق معتبر می‌باشد'}
-                           </p>
-                        </div>
+                    <div className="w-48">
+                      <p className="text-sm font-black border-b-2 border-black pb-2 uppercase tracking-tighter">{t('customer_signature')}</p>
+                    </div>
+                  </div>
+                  <div className="bg-black text-white p-8 rounded-3xl min-w-[360px] text-left shadow-2xl">
+                    <div className="flex justify-between items-center">
+                      <span className="text-2xl font-black uppercase opacity-60">{t('total_payable')}:</span>
+                      <div className="text-right">
+                        <span className="text-5xl font-black">{(totalAmount || 0).toLocaleString()}</span>
+                        <span className="text-lg font-black mx-2">{t('afghani')}</span>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  {/* Footer / Terms */}
-                  <div className="mt-12 pt-8 border-t-2 border-gray-200 text-center">
-                    <p className="text-base font-black mb-4 leading-relaxed max-w-3xl mx-auto italic text-gray-700">" {shopInfo.footerText} "</p>
-                    <div className="flex items-center justify-center gap-6 text-[10px] font-black text-gray-400 uppercase tracking-widest pt-4 border-t border-gray-100">
-                      <div className="flex items-center gap-1.5"><Gem size={12} /> KHAZANA JEWELRY SYSTEM</div>
-                      <span className="opacity-30">•</span>
-                      <span>SECURE & AUTHENTIC</span>
-                      <span className="opacity-30">•</span>
-                      <span>EST. {new Date().getFullYear()}</span>
-                    </div>
-                  </div>
+                <div className="mt-12 pt-8 border-t-2 border-gray-200 text-center">
+                  <p className="text-lg font-black italic text-gray-700">" {shopInfo.footerText || 'از خرید شما متشکریم!'} "</p>
                 </div>
 
                 <style>{`

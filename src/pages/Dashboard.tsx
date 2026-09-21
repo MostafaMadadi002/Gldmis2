@@ -218,6 +218,30 @@ const Dashboard: React.FC = () => {
 
     const todayNetProfitAmount = todayProfitAmount - todayExpensesAmount;
 
+    // Calculate this month's profit
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const thisMonthSales = salesArray.filter((s: any) => {
+      const d = new Date(s.date);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+    
+    let thisMonthGrossProfit = 0;
+    thisMonthSales.forEach((sale: any) => {
+      const breakdown = calculateSaleProfit(sale, productsArray);
+      thisMonthGrossProfit += breakdown.profit;
+    });
+
+    const thisMonthExpenses = expensesArray
+      .filter((e: any) => {
+        const d = new Date(e.date);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      })
+      .reduce((sum, e: any) => sum + (Number(e?.amount) || 0), 0);
+
+    const thisMonthNetProfit = thisMonthGrossProfit - thisMonthExpenses;
+
     // Calculate total all-time profit and expenses
     let totalAllSalesAmount = 0;
     let totalAllProfitAmount = 0;
@@ -250,6 +274,7 @@ const Dashboard: React.FC = () => {
       todayProfit: todayProfitAmount,
       todayExpenses: todayExpensesAmount,
       todayNetProfit: todayNetProfitAmount,
+      thisMonthProfit: thisMonthNetProfit,
       totalSales: totalAllSalesAmount,
       totalProfit: totalAllProfitAmount,
       totalExpenses: totalAllExpensesAmount,
@@ -527,6 +552,13 @@ const Dashboard: React.FC = () => {
                   <span className="text-kh-text dark:text-kh-gold">{t('net_profit')} ({t('today')}):</span>
                   <span className={`font-mono ${stats.todayNetProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
                     {stats.todayNetProfit >= 0 ? '+' : ''}{Number(stats.todayNetProfit || 0).toLocaleString()} {t('afghani')}
+                  </span>
+                </div>
+
+                <div className="flex justify-between items-center pt-2 border-t border-black/5 dark:border-white/5 font-black text-xs bg-kh-gold/5 -mx-5 px-5 py-2">
+                  <span className="text-kh-text dark:text-kh-gold">{language === 'en' ? 'Profit This Month' : 'سود خالص این ماه'}:</span>
+                  <span className={`font-mono ${stats.thisMonthProfit >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+                    {stats.thisMonthProfit >= 0 ? '+' : ''}{Number(stats.thisMonthProfit || 0).toLocaleString()} {t('afghani')}
                   </span>
                 </div>
               </div>

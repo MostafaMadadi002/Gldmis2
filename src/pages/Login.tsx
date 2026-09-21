@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Gem, Lock, User, Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useSettings } from '../context/SettingsContext';
 import api from '../lib/api';
 
@@ -108,10 +109,17 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             </div>
 
             {errorMessage && (
-              <div className="mb-6 p-3.5 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-start gap-2.5 text-xs text-red-600 dark:text-red-400 font-bold">
-                <AlertCircle size={18} className="shrink-0 mt-0.5" />
-                <span>{errorMessage}</span>
-              </div>
+              <motion.div 
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className="mb-6 p-4 bg-red-500/10 border-2 border-red-500/30 rounded-2xl flex items-start gap-3 text-sm text-red-600 dark:text-red-400 font-black shadow-lg shadow-red-500/5"
+              >
+                <AlertCircle size={20} className="shrink-0 mt-0.5" />
+                <div className="flex flex-col">
+                  <span className="font-black">{language === 'en' ? 'Login Failed' : 'خطا در ورود'}</span>
+                  <span className="text-xs opacity-90 mt-0.5">{errorMessage}</span>
+                </div>
+              </motion.div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
