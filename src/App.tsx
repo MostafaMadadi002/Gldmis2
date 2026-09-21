@@ -11,6 +11,8 @@ import Settings from './pages/Settings';
 import Reports from './pages/Reports';
 import Login from './pages/Login';
 import POS from './pages/POS';
+import LowStockAlerts from './pages/LowStockAlerts';
+import PromotionalShowroom from './pages/PromotionalShowroom';
 import { SettingsProvider } from './context/SettingsContext';
 import { InventoryProvider } from './context/InventoryContext';
 import { RatesProvider } from './context/RatesContext';
@@ -33,10 +35,11 @@ export default function App() {
             } catch (apiError) {
               console.error('Failed to fetch user profile:', apiError);
               // Still set the user with tokens at least, or clear if invalid
-              if ((apiError as any)?.response?.status === 401) {
+              if ((apiError as any)?.response?.status === 401 || (apiError as any)?.response?.status === 403) {
                 localStorage.removeItem('khazana_user');
                 setUser(null);
               } else {
+                // For other network errors, we might keep the local state if it's a temporary connectivity issue
                 setUser(userData);
               }
             }
@@ -70,48 +73,46 @@ export default function App() {
     </div>;
   }
 
-  if (!user) {
-    return (
-      <SettingsProvider>
-        <Login onLogin={handleLogin} />
-      </SettingsProvider>
-    );
-  }
-
   return (
-    <SettingsProvider>
-      <InventoryProvider>
-        <RatesProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<MainLayout onLogout={handleLogout} />}>
-                <Route index element={<Dashboard />} />
-                <Route path="inventory" element={<Inventory />} />
-                <Route path="returns" element={<Returns />} />
-                <Route path="pos" element={<POS />} />
-                <Route path="rates" element={<Rates />} />
-                <Route path="reports" element={<Reports />} />
-                <Route 
-                  path="users" 
-                  element={
-                    (user?.role === 'admin' || user?.is_superuser || user?.username === 'admin') 
-                    ? <Users /> 
-                    : <div className="p-10 text-center font-bold text-red-500">شما اجازه دسترسی به این بخش را ندارید.</div>
-                  } 
-                />
-                <Route 
-                  path="settings" 
-                  element={
-                    (user?.role === 'admin' || user?.is_superuser || user?.username === 'admin') 
-                    ? <Settings /> 
-                    : <div className="p-10 text-center font-bold text-red-500">شما اجازه دسترسی به این بخش را ندارید.</div>
-                  } 
-                />
-              </Route>
-            </Routes>
-          </BrowserRouter>
-        </RatesProvider>
-      </InventoryProvider>
-    </SettingsProvider>
+    <BrowserRouter>
+      <SettingsProvider>
+        <InventoryProvider isAuthenticated={!!user}>
+          <RatesProvider isAuthenticated={!!user}>
+            {!user ? (
+              <Login onLogin={handleLogin} />
+            ) : (
+              <Routes>
+                <Route path="/" element={<MainLayout onLogout={handleLogout} />}>
+                  <Route index element={<Dashboard />} />
+                  <Route path="inventory" element={<Inventory />} />
+                  <Route path="low-stock" element={<LowStockAlerts />} />
+                  <Route path="showroom" element={<PromotionalShowroom />} />
+                  <Route path="returns" element={<Returns />} />
+                  <Route path="pos" element={<POS />} />
+                  <Route path="rates" element={<Rates />} />
+                  <Route path="reports" element={<Reports />} />
+                  <Route 
+                    path="users" 
+                    element={
+                      (user?.role === 'admin' || user?.is_superuser || user?.username === 'admin') 
+                      ? <Users /> 
+                      : <div className="p-10 text-center font-bold text-red-500">شما اجازه دسترسی به این بخش را ندارید.</div>
+                    } 
+                  />
+                  <Route 
+                    path="settings" 
+                    element={
+                      (user?.role === 'admin' || user?.is_superuser || user?.username === 'admin') 
+                      ? <Settings /> 
+                      : <div className="p-10 text-center font-bold text-red-500">شما اجازه دسترسی به این بخش را ندارید.</div>
+                    } 
+                  />
+                </Route>
+              </Routes>
+            )}
+          </RatesProvider>
+        </InventoryProvider>
+      </SettingsProvider>
+    </BrowserRouter>
   );
 }

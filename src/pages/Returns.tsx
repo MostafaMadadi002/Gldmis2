@@ -24,6 +24,16 @@ import { useRates } from '../context/RatesContext';
 import { Product } from '../types';
 
 const Returns: React.FC = () => {
+  const toEnglishDigits = (str: string) => {
+    const persianDigits = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g];
+    const arabicDigits = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /۷/g, /۸/g, /۹/g];
+    let result = str;
+    for (let i = 0; i < 10; i++) {
+      result = result.replace(persianDigits[i], i.toString()).replace(arabicDigits[i], i.toString());
+    }
+    return result;
+  };
+
   const { products, addProduct, removeProduct, countries, addCountry } = useInventory();
   const { rates } = useRates();
   const { t, language } = useSettings();
@@ -85,17 +95,33 @@ const Returns: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    if (name === 'origin' && value === 'ADD_NEW_ORIGIN') {
+    
+    // Convert digits if it's a numeric field
+    const processedValue = ['weight', 'quantity', 'minQuantity', 'purchasePrice', 'sellingPrice'].includes(name) 
+      ? toEnglishDigits(value) 
+      : value;
+
+    if (name === 'origin' && processedValue === 'ADD_NEW_ORIGIN') {
       setIsAddingNewOrigin(true);
       setFormData(prev => ({ ...prev, origin: '' }));
       return;
     }
-    if (name === 'stoneType' && value === 'ADD_NEW_STONE') {
+    if (name === 'stoneType' && processedValue === 'ADD_NEW_STONE') {
       setIsAddingNewStoneType(true);
       setFormData(prev => ({ ...prev, stoneType: '' }));
       return;
     }
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'material') {
+      const newMaterial = processedValue as 'gold' | 'silver' | 'jewelry';
+      if (newMaterial !== 'gold') {
+        setFormData(prev => ({ ...prev, material: newMaterial, secondHandDestination: 'inventory' }));
+      } else {
+        setFormData(prev => ({ ...prev, material: newMaterial }));
+      }
+      return;
+    }
+
+    setFormData(prev => ({ ...prev, [name]: processedValue }));
   };
 
   const handleConfirmNewOrigin = async () => {
@@ -562,34 +588,36 @@ const Returns: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Option 2: Send to Melt */}
-                    <div 
-                      onClick={() => setFormData(prev => ({ ...prev, secondHandDestination: 'melt' }))}
-                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3 ${
-                        formData.secondHandDestination === 'melt'
-                          ? 'border-amber-500 bg-amber-500/5 dark:bg-amber-500/10 shadow-sm'
-                          : 'border-kh-card/10 dark:border-dark-border hover:border-kh-card/20'
-                      }`}
-                    >
-                      <div className={`p-2 rounded-xl mt-0.5 ${
-                        formData.secondHandDestination === 'melt' ? 'bg-amber-500 text-white' : 'bg-kh-bg/80 text-kh-muted dark:bg-black/20'
-                      }`}>
-                        <Flame size={20} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-black text-kh-text dark:text-dark-text">
-                            {t('destination_melt')}
-                          </span>
-                          {formData.secondHandDestination === 'melt' && (
-                            <CheckCircle2 size={16} className="text-amber-500" />
-                          )}
+                    {/* Option 2: Send to Melt - ONLY FOR GOLD */}
+                    {formData.material === 'gold' && (
+                      <div 
+                        onClick={() => setFormData(prev => ({ ...prev, secondHandDestination: 'melt' }))}
+                        className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3 ${
+                          formData.secondHandDestination === 'melt'
+                            ? 'border-amber-500 bg-amber-500/5 dark:bg-amber-500/10 shadow-sm'
+                            : 'border-kh-card/10 dark:border-dark-border hover:border-kh-card/20'
+                        }`}
+                      >
+                        <div className={`p-2 rounded-xl mt-0.5 ${
+                          formData.secondHandDestination === 'melt' ? 'bg-amber-500 text-white' : 'bg-kh-bg/80 text-kh-muted dark:bg-black/20'
+                        }`}>
+                          <Flame size={20} />
                         </div>
-                        <p className="text-[10px] text-kh-muted mt-1 leading-relaxed">
-                          {t('destination_melt_desc')}
-                        </p>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-black text-kh-text dark:text-dark-text">
+                              {t('destination_melt')}
+                            </span>
+                            {formData.secondHandDestination === 'melt' && (
+                              <CheckCircle2 size={16} className="text-amber-500" />
+                            )}
+                          </div>
+                          <p className="text-[10px] text-kh-muted mt-1 leading-relaxed">
+                            {t('destination_melt_desc')}
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </div>
 

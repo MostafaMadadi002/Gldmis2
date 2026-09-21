@@ -8,6 +8,11 @@ class Base64ImageField(serializers.ImageField):
     def to_internal_value(self, data):
         if not data:
             return None
+            
+        # If it's already a URL (existing image), just return it
+        if isinstance(data, str) and (data.startswith('http') or data.startswith('/media/')):
+            return None # DRF ImageField will keep existing file if we return None or just ignore it
+            
         if isinstance(data, str) and data.startswith('data:image'):
             try:
                 format, imgstr = data.split(';base64,')
@@ -15,6 +20,7 @@ class Base64ImageField(serializers.ImageField):
                 data = ContentFile(base64.b64decode(imgstr), name=f"{uuid.uuid4()}.{ext}")
             except Exception:
                 raise serializers.ValidationError("فرمت تصویر معتبر نیست.")
+                
         return super().to_internal_value(data)
 
 class CountrySerializer(serializers.ModelSerializer):
@@ -32,15 +38,21 @@ class ProductSerializer(serializers.ModelSerializer):
     secondHandDestination = serializers.CharField(source='second_hand_destination', required=False, allow_null=True)
     purchasePrice = serializers.DecimalField(source='purchase_price', max_digits=14, decimal_places=2, required=False, allow_null=True)
     deductFromMelt = serializers.BooleanField(source='deduct_from_melt', required=False, default=False)
+    purchasePricePerGram = serializers.SerializerMethodField()
     image = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Product
         fields = [
             'id', 'code', 'name', 'weight', 'material', 'material_display', 'carat', 
-            'stoneType', 'origin', 'country_name', 'quantity', 'min_quantity', 'minQuantity', 'image', 
-            'price', 'purchasePrice', 'isReturned', 'secondHandDestination', 'deductFromMelt'
+            'stoneType', 'origin', 'country_name', 'quantity', 'minQuantity', 'image', 
+            'price', 'purchasePrice', 'purchasePricePerGram', 'isReturned', 'secondHandDestination', 'deductFromMelt'
         ]
+
+    def get_purchasePricePerGram(self, obj):
+        if obj.purchase_price and obj.weight and obj.weight > 0:
+            return float(obj.purchase_price / obj.weight)
+        return 0
 
     def create(self, validated_data):
         origin_name = validated_data.pop('origin', None)
@@ -64,17 +76,15 @@ class ProductSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
     def validate(self, data):
-        material = data.get('material')
-        carat = data.get('carat')
-        stone_type = data.get('stone_type')
+        # Use existing instance values as fallback for validation
+        material = data.get('material', getattr(self.instance, 'material', None) if self.instance else None)
+        carat = data.get('carat', getattr(self.instance, 'carat', None) if self.instance else None)
+        stone_type = data.get('stone_type', getattr(self.instance, 'stone_type', None) if self.instance else None)
 
         if material in ['gold', 'silver'] and not carat:
-            # Check if updating an existing record that already has a carat
-            if not self.instance or not self.instance.carat:
-                raise serializers.ValidationError({"carat": "عیار برای طلا و نقره الزامی است."})
+            raise serializers.ValidationError({"carat": "عیار برای طلا و نقره الزامی است."})
         
         if material == 'jewelry' and not stone_type:
-            if not self.instance or not self.instance.stone_type:
-                raise serializers.ValidationError({"stoneType": "نوع سنگ برای جواهر الزامی است."})
+            raise serializers.ValidationError({"stoneType": "نوع سنگ برای جواهر الزامی است."})
             
         return data

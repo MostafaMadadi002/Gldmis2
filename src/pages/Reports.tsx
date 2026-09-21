@@ -48,10 +48,12 @@ const Reports: React.FC = () => {
   const { sales, products, expenses, addExpense, removeExpense } = useInventory();
   const { shopInfo, logo, language, t } = useSettings();
   const [printingSale, setPrintingSale] = useState<Sale | null>(null);
+  const [printType, setPrintType] = useState<'bill' | 'report'>('bill');
   const [selectedDate, setSelectedDate] = useState(toISODate(new Date()));
   const [searchQuery, setSearchQuery] = useState('');
   const [tempSearchQuery, setTempSearchQuery] = useState('');
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isPrintingOverall, setIsPrintingOverall] = useState(false);
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date());
   const [activeTab, setActiveTab] = useState<'sales' | 'expenses' | 'summary'>('sales');
 
@@ -207,12 +209,21 @@ const Reports: React.FC = () => {
     setSearchQuery(tempSearchQuery);
   };
 
-  const handlePrint = (sale: Sale) => {
+  const handlePrint = (sale: Sale, type: 'bill' | 'report') => {
+    setPrintType(type);
     setPrintingSale(sale);
     setTimeout(() => {
       window.print();
       setPrintingSale(null);
     }, 300);
+  };
+
+  const handlePrintOverallReport = () => {
+    setIsPrintingOverall(true);
+    setTimeout(() => {
+      window.print();
+      setIsPrintingOverall(false);
+    }, 500);
   };
 
   const handleOpenExpenseModal = () => {
@@ -336,6 +347,13 @@ const Reports: React.FC = () => {
           </div>
           
           <div className="flex items-center gap-3">
+            <button 
+              onClick={handlePrintOverallReport}
+              className="flex items-center gap-2 bg-kh-bg dark:bg-white/5 text-kh-text dark:text-kh-gold border border-kh-card/10 dark:border-white/10 px-4 h-10 rounded-lg text-sm font-bold hover:bg-kh-gold hover:text-black transition-all group"
+            >
+              <Printer size={18} className="text-kh-gold group-hover:text-black" />
+              <span>{language === 'en' ? 'Print Overall Report' : 'چاپ گزارش عمومی'}</span>
+            </button>
             {/* Add Expense Button */}
             <button
               id="btn-add-expense-modal"
@@ -797,7 +815,7 @@ const Reports: React.FC = () => {
                         <td className="py-4 px-6 font-black text-kh-text dark:text-kh-gold">{sale.invoiceNumber}</td>
                         <td className="py-4 px-6 text-sm font-bold">{sale.customerName || t('guest_customer')}</td>
                         <td className="py-4 px-6 text-sm font-bold text-kh-muted">{sale.sellerName}</td>
-                        <td className="py-4 px-6 text-sm font-black text-kh-text dark:text-kh-gold">{sale.totalAmount.toLocaleString()}</td>
+                        <td className="py-4 px-6 text-sm font-black text-kh-text dark:text-kh-gold">{(sale.totalAmount || 0).toLocaleString()}</td>
                         <td className="py-4 px-6">
                           <span className={`inline-flex items-center gap-1 text-xs font-black px-2 py-0.5 rounded-full font-mono ${
                             saleProfitDetail.profit > 0 
@@ -806,7 +824,7 @@ const Reports: React.FC = () => {
                                 ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20' 
                                 : 'bg-gray-500/10 text-gray-600 dark:text-gray-400'
                           }`}>
-                            {saleProfitDetail.profit > 0 ? '+' : ''}{saleProfitDetail.profit.toLocaleString()}
+                            {saleProfitDetail.profit > 0 ? '+' : ''}{(saleProfitDetail.profit || 0).toLocaleString()}
                           </span>
                         </td>
                         <td className="py-4 px-6">
@@ -820,11 +838,11 @@ const Reports: React.FC = () => {
                         </td>
                         <td className="py-4 px-6">
                           <button 
-                            onClick={() => handlePrint(sale)}
-                            className={`flex items-center gap-2 text-kh-gold hover:bg-kh-gold/10 px-3 py-1.5 rounded-lg transition-all text-xs font-bold ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}
+                            onClick={() => handlePrint(sale, 'bill')}
+                            className={`flex items-center gap-2 text-emerald-500 hover:bg-emerald-500/10 px-3 py-1.5 rounded-lg transition-all text-xs font-bold ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}
                           >
                             <Printer size={14} />
-                            {t('print')}
+                            {language === 'en' ? 'Print Bill' : 'چاپ بل'}
                           </button>
                         </td>
                       </tr>
@@ -1083,6 +1101,276 @@ const Reports: React.FC = () => {
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* Printable Section */}
+      {(printingSale || isPrintingOverall) && (
+        <div className="hidden print:block fixed inset-0 z-[999] bg-white text-black p-0 overflow-visible">
+          {isPrintingOverall ? (
+            /* OVERALL GENERAL REPORT PRINTABLE */
+            <div className={`p-10 font-serif border-[12px] border-double border-black ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} style={{ direction: isRtl ? 'rtl' : 'ltr' }}>
+              <div className="flex justify-between items-start border-b-4 border-black pb-8 mb-8">
+                <div className={`flex items-center gap-6 ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}>
+                  {logo ? (
+                    <img src={logo} alt="Shop Logo" className="w-24 h-24 object-contain border-2 border-black p-1" />
+                  ) : (
+                    <div className="w-24 h-24 border-2 border-black flex items-center justify-center">
+                      <TrendingUp size={48} className="text-black" />
+                    </div>
+                  )}
+                  <div className={isRtl ? 'text-right' : 'text-left'}>
+                    <h1 className="text-4xl font-black mb-1">{shopInfo.name}</h1>
+                    <p className="text-base font-bold text-gray-800">{t('reports')} &amp; {t('profit')}</p>
+                  </div>
+                </div>
+                <div className={isRtl ? 'text-left' : 'text-right'}>
+                  <div className="text-2xl font-black mb-2 border-b-2 border-black pb-1 inline-block uppercase">{language === 'en' ? 'Daily General Report' : 'گزارش عمومی روزانه'}</div>
+                  <div className="text-sm font-bold text-gray-800">{t('date')}: <span className="font-black text-black">{formattedSelectedDate}</span></div>
+                  <div className="text-xs font-bold text-gray-500 mt-1">{language === 'en' ? 'Report Generated' : 'زمان تهیه گزارش'}: {new Date().toLocaleTimeString()}</div>
+                </div>
+              </div>
+
+              {/* Financial Summary Grid */}
+              <div className="grid grid-cols-2 gap-4 mb-10">
+                <div className="border-2 border-black p-4 bg-gray-50">
+                  <h3 className="text-xs font-black uppercase mb-3 border-b border-black pb-1">{t('sales')}</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between font-bold">
+                      <span>{t('total')} {t('sales')}:</span>
+                      <span className="font-black">{(totalSalesOnSelectedDay || 0).toLocaleString()} {t('afghani')}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>{t('total')} {t('invoice')}:</span>
+                      <span>{selectedSalesHistory.length}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-2 border-black p-4 bg-gray-50">
+                  <h3 className="text-xs font-black uppercase mb-3 border-b border-black pb-1">{t('profit')}</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between font-bold">
+                      <span>{t('gross_profit')}:</span>
+                      <span className="font-black">{(selectedDayProfitData.grossProfit || 0).toLocaleString()} {t('afghani')}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>{t('cogs')}:</span>
+                      <span>{(selectedDayProfitData.totalCogs || 0).toLocaleString()} {t('afghani')}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-2 border-black p-4 bg-gray-50">
+                  <h3 className="text-xs font-black uppercase mb-3 border-b border-black pb-1">{t('expense_deduction')}</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between font-bold text-rose-700">
+                      <span>{t('total_expenses')}:</span>
+                      <span className="font-black">-{(totalExpensesOnSelectedDay || 0).toLocaleString()} {t('afghani')}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span>{language === 'en' ? 'Records' : 'تعداد رکوردهای کسر پول'}:</span>
+                      <span>{selectedDateExpenses.length}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="border-2 border-black p-4 bg-gray-100">
+                  <h3 className="text-xs font-black uppercase mb-3 border-b border-black pb-1">{t('net_profit')}</h3>
+                  <div className="space-y-2">
+                    <div className={`flex justify-between text-xl font-black ${netProfitOnSelectedDay >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                      <span>{t('net_profit')}:</span>
+                      <span>{(netProfitOnSelectedDay || 0).toLocaleString()} {t('afghani')}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Transactions List */}
+              <div className="mb-10">
+                <h3 className="text-sm font-black uppercase mb-3 border-b-2 border-black pb-1">{language === 'en' ? 'Daily Transactions' : 'لیست تراکنش‌های فروش'}</h3>
+                <table className="w-full border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b-2 border-black font-black uppercase">
+                      <th className="py-2 text-right">#</th>
+                      <th className="py-2 text-right">{t('invoice')}</th>
+                      <th className="py-2 text-right">{t('customer_name')}</th>
+                      <th className="py-2 text-left">{t('total_amount')}</th>
+                      <th className="py-2 text-left">{t('profit')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {selectedSalesHistory.map((s, i) => (
+                      <tr key={s.id}>
+                        <td className="py-2 text-gray-400">{i + 1}</td>
+                        <td className="py-2 font-black">{s.invoiceNumber}</td>
+                        <td className="py-2">{s.customerName || '-'}</td>
+                        <td className="py-2 font-bold">{(s.totalAmount || 0).toLocaleString()}</td>
+                        <td className={`py-2 font-black ${calculateSaleProfit(s, products).profit >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}>
+                          {calculateSaleProfit(s, products).profit.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Expenses List */}
+              {selectedDateExpenses.length > 0 && (
+                <div className="mb-10">
+                  <h3 className="text-sm font-black uppercase mb-3 border-b-2 border-black pb-1 text-rose-700">{t('expense_deduction')}</h3>
+                  <table className="w-full border-collapse text-xs text-rose-800">
+                    <thead>
+                      <tr className="border-b-2 border-black font-black uppercase">
+                        <th className="py-2 text-right">#</th>
+                        <th className="py-2 text-right">{t('expense_title')}</th>
+                        <th className="py-2 text-right">{t('category')}</th>
+                        <th className="py-2 text-left">{t('amount')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {selectedDateExpenses.map((e, i) => (
+                        <tr key={e.id}>
+                          <td className="py-2 opacity-50">{i + 1}</td>
+                          <td className="py-2 font-bold">{e.title}</td>
+                          <td className="py-2 italic">{getCategoryBadge(e.category).label}</td>
+                          <td className="py-2 font-black">{(e.amount || 0).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <div className="mt-20 pt-8 border-t-2 border-black text-center text-xs font-bold opacity-50 italic">
+                {language === 'en' ? 'Official Daily Closure Report' : 'گزارش رسمی تصفیه روزانه - سیستم مدیریت خزاین'}
+              </div>
+            </div>
+          ) : printingSale && (
+            <div className={`p-10 font-serif border-[12px] border-double border-black ${isRtl ? 'dir-rtl' : 'dir-ltr'}`} style={{ direction: isRtl ? 'rtl' : 'ltr', minHeight: '297mm' }}>
+              {/* Official Invoice Layout */}
+              <div className="flex justify-between items-start border-b-4 border-black pb-8 mb-8">
+                <div className={`flex items-center gap-8 ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}>
+                  {logo ? (
+                    <img src={logo} alt="Shop Logo" className="w-28 h-28 object-contain border-2 border-black p-1" />
+                  ) : (
+                    <div className="w-28 h-28 border-2 border-black flex items-center justify-center bg-gray-50">
+                      <Gem size={56} className="text-black" />
+                    </div>
+                  )}
+                  <div className={isRtl ? 'text-right' : 'text-left'}>
+                    <h1 className="text-5xl font-black mb-2 tracking-tight">{shopInfo.name}</h1>
+                    <p className="text-lg font-bold text-gray-700 leading-tight">{shopInfo.description}</p>
+                  </div>
+                </div>
+                <div className={isRtl ? 'text-left' : 'text-right'}>
+                  <div className="text-3xl font-black mb-3 border-b-4 border-black pb-1 inline-block uppercase tracking-wider">{t('official_invoice')}</div>
+                  <div className="space-y-1">
+                    <div className="text-sm font-black text-gray-900">{t('invoice_no')}: <span className="text-xl">#{printingSale.invoiceNumber}</span></div>
+                    <div className="text-sm font-bold text-gray-700">{t('date')}: <span className="font-black text-black">{new Date(printingSale.date).toLocaleDateString(language === 'en' ? 'en-US' : 'fa-IR')}</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-12 mb-10 border-b-2 border-black pb-8">
+                <div className={`space-y-4 ${isRtl ? 'text-right' : 'text-left'}`}>
+                  <div className="flex items-end gap-3 border-b border-gray-300 pb-1">
+                    <span className="text-sm font-black text-gray-500 uppercase min-w-[100px]">{t('customer_name')}:</span>
+                    <span className="text-xl font-black text-black flex-1">{printingSale.customerName || t('guest_customer')}</span>
+                  </div>
+                  <div className="flex items-end gap-3 border-b border-gray-300 pb-1">
+                    <span className="text-sm font-black text-gray-500 uppercase min-w-[100px]">{t('seller')}:</span>
+                    <span className="text-xl font-black text-black flex-1">{printingSale.sellerName}</span>
+                  </div>
+                </div>
+                <div className={`space-y-1 pt-2 ${isRtl ? 'text-left' : 'text-right'}`}>
+                  <div className="text-sm font-black text-gray-900">{shopInfo.address}</div>
+                  <div className="text-base font-black text-black font-mono">{shopInfo.phone}</div>
+                </div>
+              </div>
+
+              <table className={`w-full border-collapse mb-10 ${isRtl ? 'text-right' : 'text-left'}`}>
+                <thead>
+                  <tr className={`border-b-2 border-black text-[11px] font-black text-gray-600 uppercase ${isRtl ? 'text-right' : 'text-left'}`}>
+                    <th className="py-3 px-3 w-12 text-center">#</th>
+                    <th className="py-3 px-3">{t('description')}</th>
+                    <th className="py-3 px-3 text-center">{t('code')}</th>
+                    <th className="py-3 px-3 text-center">{t('quantity')}</th>
+                    <th className="py-3 px-3 text-center">{t('weight')}/{t('carat')}</th>
+                    <th className={`py-3 px-3 ${isRtl ? 'text-left' : 'text-right'}`}>{t('unit_price')}</th>
+                    <th className={`py-3 px-3 ${isRtl ? 'text-left' : 'text-right'}`}>{t('total_amount')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y-2 divide-gray-200">
+                  {printingSale.items.map((item, index) => {
+                    const unitPrice = (item.totalAmount || 0) / (item.quantity * (item.material === 'jewelry' ? 1 : item.weight || 1));
+                    return (
+                      <tr key={index} className="text-base font-medium">
+                        <td className="py-4 px-3 text-center text-gray-400 font-bold">{index + 1}</td>
+                        <td className="py-4 px-3">
+                          <div className="font-black text-black text-lg leading-tight">{item.name}</div>
+                          <div className="text-xs font-bold text-gray-500 mt-0.5">{item.carat || item.stoneType || ''}</div>
+                        </td>
+                        <td className="py-4 px-3 text-center font-mono text-xs font-bold bg-gray-50">{item.code || '-'}</td>
+                        <td className="py-4 px-3 text-center font-black text-lg">{item.quantity}</td>
+                        <td className="py-4 px-3 text-center font-black text-lg">
+                          {(item.weight || 0).toFixed(2)} <span className="text-xs">{item.material === 'jewelry' ? t('carat') : t('gram_short')}</span>
+                        </td>
+                        <td className={`py-4 px-3 font-bold text-gray-700 ${isRtl ? 'text-left' : 'text-right'}`}>
+                          {(unitPrice || 0).toLocaleString()}
+                        </td>
+                        <td className={`py-4 px-3 font-black text-black text-lg ${isRtl ? 'text-left' : 'text-right'}`}>
+                          {(item.totalAmount || 0).toLocaleString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+
+              <div className={`flex justify-between items-start pt-8 border-t-4 border-black ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}>
+                <div className="grid grid-cols-2 gap-16 text-center pt-4">
+                  <div className="w-48">
+                    <p className="text-sm font-black border-b-2 border-black pb-2 uppercase tracking-tighter">{t('seller_signature')}</p>
+                    <div className="h-24"></div>
+                    <p className="text-base font-black border-t border-gray-200 pt-2">{printingSale.sellerName}</p>
+                  </div>
+                  <div className="w-48">
+                    <p className="text-sm font-black border-b-2 border-black pb-2 uppercase tracking-tighter">{t('customer_signature')}</p>
+                  </div>
+                </div>
+                <div className={`bg-gray-50 p-8 rounded-3xl min-w-[360px] border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] ${isRtl ? 'text-right' : 'text-left'}`}>
+                  <div className={`flex justify-between items-center text-black ${isRtl ? 'flex-row' : 'flex-row-reverse'}`}>
+                    <span className="text-2xl font-black uppercase">{t('total_payable')}:</span>
+                    <div className={isRtl ? 'text-right' : 'text-left'}>
+                      <span className="text-5xl font-black font-mono">{(printingSale.totalAmount || 0).toLocaleString()}</span>
+                      <span className="text-lg font-black mx-2 text-gray-600">{t('afghani')}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-12 pt-8 border-t-2 border-gray-200 text-center">
+                <p className="text-base font-black mb-4 italic text-gray-700">" {shopInfo.footerText} "</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .hidden.print\\:block, .hidden.print\\:block * {
+            visibility: visible;
+          }
+          .hidden.print\\:block {
+            display: block !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

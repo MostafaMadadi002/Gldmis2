@@ -58,10 +58,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         (u: any) => u.username?.toLowerCase() === username.trim().toLowerCase()
       );
 
-      // Superuser or Admin check with valid password match or fallback admin password
+      // Superuser or Admin check with valid password match
       const isSuperUserCreds = 
-        (username.trim().toLowerCase() === 'admin' && (password === 'admin123' || password === 'admin' || !matchedUser)) ||
-        (matchedUser && (!matchedUser.password || matchedUser.password === password));
+        (username.trim().toLowerCase() === 'admin' && (password === 'admin123' || password === 'admin')) ||
+        (matchedUser && matchedUser.password === password);
 
       if (isSuperUserCreds) {
         const superuserData = {
@@ -83,8 +83,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       setIsLoading(false);
       setErrorMessage(
         language === 'en'
-          ? 'Invalid username or password. Only registered users and superusers can log in.'
-          : 'نام کاربری یا رمز عبور اشتباه است. فقط سوپریوزر و کاربران ثبت‌شده مجاز به ورود هستند.'
+          ? 'Invalid username or password.'
+          : 'اسم یا رمز شما اشتباه است'
       );
     }
   };

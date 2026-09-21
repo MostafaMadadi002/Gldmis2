@@ -3,167 +3,6 @@ import { Product, Sale, Country, Expense } from '../types';
 import api from '../lib/api';
 import { useSettings } from './SettingsContext';
 
-export const INITIAL_SAMPLE_PRODUCTS: Product[] = [
-  {
-    id: 'prod-101',
-    code: 'G-21-101',
-    name: 'انگشتر طلای ۲۱ عیار بحرینی',
-    weight: 5.45,
-    material: 'gold',
-    carat: '21',
-    origin: 'بحرین',
-    quantity: 6,
-    minQuantity: 2,
-    purchasePricePerGram: 4200,
-    purchasePrice: 22890,
-  },
-  {
-    id: 'prod-102',
-    code: 'G-18-102',
-    name: 'دستبند طلای ۱۸ عیار کارتیه',
-    weight: 12.2,
-    material: 'gold',
-    carat: '18',
-    origin: 'ایتالیا',
-    quantity: 4,
-    minQuantity: 1,
-    purchasePricePerGram: 3700,
-    purchasePrice: 45140,
-  },
-  {
-    id: 'prod-103',
-    code: 'G-21-103',
-    name: 'سرویس طلا ۲۱ عیار تراش هندی',
-    weight: 28.8,
-    material: 'gold',
-    carat: '21',
-    origin: 'هند',
-    quantity: 2,
-    minQuantity: 1,
-    purchasePricePerGram: 4250,
-    purchasePrice: 122400,
-  },
-  {
-    id: 'prod-104',
-    code: 'G-22-104',
-    name: 'مدال طلای ۲۲ عیار کابل طرح سنتی',
-    weight: 7.6,
-    material: 'gold',
-    carat: '22',
-    origin: 'افغانستان',
-    quantity: 4,
-    minQuantity: 1,
-    purchasePricePerGram: 4500,
-    purchasePrice: 34200,
-  },
-  {
-    id: 'prod-105',
-    code: 'S-925-105',
-    name: 'انگشتر نقره ۹۲۵ با نگین زمرد پنجشیر',
-    weight: 6.5,
-    material: 'silver',
-    carat: '925',
-    origin: 'افغانستان',
-    quantity: 8,
-    minQuantity: 2,
-    stoneType: 'زمرد پنجشیر',
-    purchasePricePerGram: 250,
-    purchasePrice: 1625,
-  },
-  {
-    id: 'prod-106',
-    code: 'S-925-106',
-    name: 'زنجیر نقره ۹۲۵ عیار ونیزی مردانه',
-    weight: 18.3,
-    material: 'silver',
-    carat: '925',
-    origin: 'ایتالیا',
-    quantity: 10,
-    minQuantity: 3,
-    purchasePricePerGram: 180,
-    purchasePrice: 3294,
-  },
-  {
-    id: 'prod-107',
-    code: 'J-107',
-    name: 'انگشتر جواهر تک‌نگین یاقوت سرخ',
-    weight: 3.2,
-    material: 'jewelry',
-    origin: 'افغانستان',
-    quantity: 3,
-    minQuantity: 1,
-    stoneType: 'یاقوت برمه',
-    price: 26000,
-    purchasePrice: 19000,
-  },
-  {
-    id: 'prod-108',
-    code: 'G-18-108',
-    name: 'گوشواره طلای ۱۸ عیار میخی نگین‌دار',
-    weight: 4.15,
-    material: 'gold',
-    carat: '18',
-    origin: 'ترکیه',
-    quantity: 5,
-    minQuantity: 2,
-    purchasePricePerGram: 3650,
-    purchasePrice: 15147.5,
-  }
-];
-
-export const INITIAL_SAMPLE_SALES: Sale[] = [
-  {
-    id: 'sale-1001',
-    invoiceNumber: 'INV-10021',
-    customerName: 'محمد ادریس',
-    sellerName: 'احمد مدیر',
-    date: new Date().toLocaleDateString('en-CA'),
-    timestamp: Date.now() - 3600000,
-    totalAmount: 25500,
-    items: [
-      {
-        id: 'prod-101',
-        name: 'انگشتر طلای ۲۱ عیار بحرینی',
-        code: 'G-21-101',
-        material: 'gold',
-        carat: '21',
-        weight: 5.45,
-        origin: 'بحرین',
-        quantity: 6,
-        selectedWeight: 5.45,
-        selectedQuantity: 1,
-        selectedPrice: 4678,
-        purchasePrice: 4200
-      }
-    ]
-  },
-  {
-    id: 'sale-1002',
-    invoiceNumber: 'INV-10022',
-    customerName: 'شفیق احمد',
-    sellerName: 'احمد مدیر',
-    date: new Date().toLocaleDateString('en-CA'),
-    timestamp: Date.now() - 1800000,
-    totalAmount: 2800,
-    items: [
-      {
-        id: 'prod-105',
-        name: 'انگشتر نقره ۹۲۵ با نگین زمرد پنجشیر',
-        code: 'S-925-105',
-        material: 'silver',
-        carat: '925',
-        weight: 6.5,
-        origin: 'افغانستان',
-        quantity: 8,
-        selectedWeight: 6.5,
-        selectedQuantity: 1,
-        selectedPrice: 430,
-        purchasePrice: 250
-      }
-    ]
-  }
-];
-
 interface InventoryContextType {
   products: Product[];
   sales: Sale[];
@@ -185,87 +24,44 @@ interface InventoryContextType {
 
 const InventoryContext = createContext<InventoryContextType | undefined>(undefined);
 
-export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function InventoryProvider({ children, isAuthenticated }: { children: React.ReactNode; isAuthenticated: boolean }) {
   const { t } = useSettings();
 
-  // Initialize immediately from localStorage or fallback to initial sample data
-  const [products, setProducts] = useState<Product[]>(() => {
-    try {
-      const saved = localStorage.getItem('khazana_inventory') || localStorage.getItem('khazana_inventory_backup');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {
-      console.error('Error loading initial products:', e);
-    }
-    // Seed default sample products so the app is never empty
-    try {
-      localStorage.setItem('khazana_inventory', JSON.stringify(INITIAL_SAMPLE_PRODUCTS));
-      localStorage.setItem('khazana_inventory_backup', JSON.stringify(INITIAL_SAMPLE_PRODUCTS));
-    } catch {}
-    return INITIAL_SAMPLE_PRODUCTS;
-  });
-
-  const [sales, setSales] = useState<Sale[]>(() => {
-    try {
-      const saved = localStorage.getItem('khazana_sales') || localStorage.getItem('khazana_sales_backup');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {
-      console.error('Error loading initial sales:', e);
-    }
-    try {
-      localStorage.setItem('khazana_sales', JSON.stringify(INITIAL_SAMPLE_SALES));
-      localStorage.setItem('khazana_sales_backup', JSON.stringify(INITIAL_SAMPLE_SALES));
-    } catch {}
-    return INITIAL_SAMPLE_SALES;
-  });
-
-  const [expenses, setExpenses] = useState<Expense[]>(() => {
-    try {
-      const saved = localStorage.getItem('khazana_expenses');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (e) {
-      console.error('Error loading initial expenses:', e);
-    }
-    return [];
-  });
-
-  const [countries, setCountries] = useState<Country[]>(() => {
-    try {
-      const saved = localStorage.getItem('khazana_countries');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {}
-    return [
-      { id: 1, name: 'افغانستان' },
-      { id: 2, name: 'بحرین' },
-      { id: 3, name: 'ایتالیا' },
-      { id: 4, name: 'ترکیه' },
-      { id: 5, name: 'هند' },
-      { id: 6, name: 'امارات متحده عربی' },
-    ];
-  });
+  const [products, setProducts] = useState<Product[]>([]);
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [countries, setCountries] = useState<Country[]>([
+    { id: 1, name: 'افغانستان' },
+    { id: 2, name: 'بحرین' },
+    { id: 3, name: 'ایتالیا' },
+    { id: 4, name: 'ترکیه' },
+    { id: 5, name: 'هند' },
+    { id: 6, name: 'امارات متحده عربی' },
+  ]);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const toEnglishDigits = (str: string | number | null | undefined) => {
+    if (str === null || str === undefined) return '';
+    const s = str.toString();
+    const persianDigits = [/۰/g, /۱/g, /۲/g, /۳/g, /۴/g, /۵/g, /۶/g, /۷/g, /۸/g, /۹/g];
+    const arabicDigits = [/٠/g, /١/g, /٢/g, /٣/g, /٤/g, /٥/g, /٦/g, /٧/g, /۸/g, /۹/g];
+    let result = s;
+    for (let i = 0; i < 10; i++) {
+      result = result.replace(persianDigits[i], i.toString()).replace(arabicDigits[i], i.toString());
+    }
+    return result;
+  };
 
   const parseRemoteProduct = (p: any): Product => ({
     ...p,
     id: p.id.toString(),
-    weight: parseFloat(p.weight) || 0,
-    quantity: parseInt(p.quantity) || 0,
-    minQuantity: p.minQuantity !== undefined ? parseInt(p.minQuantity) : (p.min_quantity !== undefined ? parseInt(p.min_quantity) : 1),
-    price: p.price ? parseFloat(p.price) : undefined,
-    purchasePrice: p.purchasePrice !== undefined ? parseFloat(p.purchasePrice) : (p.purchase_price !== undefined && p.purchase_price !== null ? parseFloat(p.purchase_price) : undefined),
-    purchasePricePerGram: p.purchasePricePerGram !== undefined ? parseFloat(p.purchasePricePerGram) : (p.purchase_price_per_gram !== undefined && p.purchase_price_per_gram !== null ? parseFloat(p.purchase_price_per_gram) : undefined),
+    weight: parseFloat(toEnglishDigits(p.weight)) || 0,
+    quantity: parseInt(toEnglishDigits(p.quantity)) || 0,
+    minQuantity: p.minQuantity !== undefined ? parseInt(toEnglishDigits(p.minQuantity)) : (p.min_quantity !== undefined ? parseInt(toEnglishDigits(p.min_quantity)) : 1),
+    price: p.price ? parseFloat(toEnglishDigits(p.price)) : undefined,
+    purchasePrice: p.purchasePrice !== undefined ? parseFloat(toEnglishDigits(p.purchasePrice)) : (p.purchase_price !== undefined && p.purchase_price !== null ? parseFloat(toEnglishDigits(p.purchase_price)) : undefined),
+    purchasePricePerGram: p.purchasePricePerGram !== undefined ? parseFloat(toEnglishDigits(p.purchasePricePerGram)) : (p.purchase_price_per_gram !== undefined && p.purchase_price_per_gram !== null ? parseFloat(toEnglishDigits(p.purchase_price_per_gram)) : undefined),
     stoneType: p.stoneType || p.stone_type,
     isReturned: p.isReturned !== undefined ? p.isReturned : p.is_returned,
     secondHandDestination: p.secondHandDestination || p.second_hand_destination,
@@ -281,70 +77,50 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         api.get('/sales/expenses/')
       ]);
       
-      // ONLY update products if remote returned valid data
-      if (productsRes.status === 'fulfilled' && Array.isArray(productsRes.value.data) && productsRes.value.data.length > 0) {
+      if (productsRes.status === 'fulfilled' && Array.isArray(productsRes.value.data)) {
         const remoteProducts = productsRes.value.data.map(parseRemoteProduct);
         setProducts(remoteProducts);
-        localStorage.setItem('khazana_inventory', JSON.stringify(remoteProducts));
-        localStorage.setItem('khazana_inventory_backup', JSON.stringify(remoteProducts));
-      } else {
-        // KEEP AND PRESERVE LOCAL DATA
-        const local = localStorage.getItem('khazana_inventory') || localStorage.getItem('khazana_inventory_backup');
-        if (local) {
-          try {
-            const parsed = JSON.parse(local);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              setProducts(parsed);
-            }
-          } catch {}
-        }
       }
       
-      if (countriesRes.status === 'fulfilled' && Array.isArray(countriesRes.value.data) && countriesRes.value.data.length > 0) {
+      if (countriesRes.status === 'fulfilled' && Array.isArray(countriesRes.value.data)) {
         setCountries(countriesRes.value.data);
-        localStorage.setItem('khazana_countries', JSON.stringify(countriesRes.value.data));
       }
 
-      if (salesRes.status === 'fulfilled' && Array.isArray(salesRes.value.data) && salesRes.value.data.length > 0) {
-        const remoteSales = salesRes.value.data.map((s: any) => ({
-          ...s,
-          id: s.id.toString(),
-          invoiceNumber: s.invoice_number,
-          customerName: s.customer_name,
-          sellerName: s.seller_name,
-          date: new Date(s.created_at).toLocaleDateString('en-CA'),
-          totalAmount: parseFloat(s.total_amount) || 0,
-          items: s.items.map((it: any) => ({
-            ...it,
-            id: it.product ? it.product.toString() : `deleted-${it.id}`,
-            name: it.name_snapshot,
-            code: it.code_snapshot,
-            material: it.material_snapshot,
-            carat: it.carat_snapshot,
-            selectedWeight: parseFloat(it.weight) || 0,
-            selectedQuantity: it.quantity,
-            selectedPrice: parseFloat(it.price) || 0,
-            purchasePrice: it.purchase_price_snapshot !== undefined && it.purchase_price_snapshot !== null
-              ? parseFloat(it.purchase_price_snapshot)
-              : (it.purchasePrice !== undefined ? parseFloat(it.purchasePrice) : undefined)
-          }))
-        }));
-        setSales(remoteSales);
-        localStorage.setItem('khazana_sales', JSON.stringify(remoteSales));
-        localStorage.setItem('khazana_sales_backup', JSON.stringify(remoteSales));
-      } else {
-        const local = localStorage.getItem('khazana_sales') || localStorage.getItem('khazana_sales_backup');
-        if (local) {
+      if (salesRes.status === 'fulfilled' && Array.isArray(salesRes.value.data)) {
+        const remoteSales = salesRes.value.data.map((s: any) => {
           try {
-            const parsed = JSON.parse(local);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              setSales(parsed);
-            }
-          } catch {}
-        }
+            return {
+              ...s,
+              id: s.id?.toString() || Math.random().toString(),
+              invoiceNumber: s.invoice_number || 'N/A',
+              customerName: s.customer_name || '',
+              sellerName: s.seller_name || '',
+              date: s.created_at ? new Date(s.created_at).toLocaleDateString('en-CA') : new Date().toLocaleDateString('en-CA'),
+              totalAmount: parseFloat(s.total_amount) || 0,
+              items: (s.items || []).map((it: any) => ({
+                ...it,
+                id: it.product ? it.product.toString() : `deleted-${it.id}`,
+                name: it.name_snapshot || 'Unknown',
+                code: it.code_snapshot || '',
+                material: it.material_snapshot || '',
+                carat: it.carat_snapshot || '',
+                selectedWeight: parseFloat(it.weight) || 0,
+                selectedQuantity: parseInt(it.quantity) || 1,
+                selectedPrice: parseFloat(it.price) || 0,
+                purchasePrice: it.purchase_price_snapshot !== undefined && it.purchase_price_snapshot !== null
+                  ? parseFloat(it.purchase_price_snapshot)
+                  : (it.purchasePrice !== undefined ? parseFloat(it.purchasePrice) : undefined)
+              }))
+            };
+          } catch (e) {
+            console.error('Error parsing individual sale:', s, e);
+            return null;
+          }
+        }).filter(Boolean);
+        setSales(remoteSales);
       }
 
-      if (expensesRes.status === 'fulfilled' && Array.isArray(expensesRes.value.data) && expensesRes.value.data.length > 0) {
+      if (expensesRes.status === 'fulfilled' && Array.isArray(expensesRes.value.data)) {
         const remoteExpenses = expensesRes.value.data.map((e: any) => ({
           id: e.id.toString(),
           title: e.title,
@@ -357,14 +133,6 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           createdAt: e.created_at
         }));
         setExpenses(remoteExpenses);
-        localStorage.setItem('khazana_expenses', JSON.stringify(remoteExpenses));
-      } else {
-        const localExpenses = localStorage.getItem('khazana_expenses');
-        if (localExpenses) {
-          try {
-            setExpenses(JSON.parse(localExpenses));
-          } catch {}
-        }
       }
     } catch (error) {
       console.warn('API offline, running on persistent local storage');
@@ -374,16 +142,20 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   };
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (isAuthenticated) {
+      fetchData();
+    } else {
+      setProducts([]);
+      setSales([]);
+      setExpenses([]);
+    }
+  }, [isAuthenticated]);
 
   const restoreDefaultSampleData = () => {
-    setProducts(INITIAL_SAMPLE_PRODUCTS);
-    setSales(INITIAL_SAMPLE_SALES);
-    localStorage.setItem('khazana_inventory', JSON.stringify(INITIAL_SAMPLE_PRODUCTS));
-    localStorage.setItem('khazana_inventory_backup', JSON.stringify(INITIAL_SAMPLE_PRODUCTS));
-    localStorage.setItem('khazana_sales', JSON.stringify(INITIAL_SAMPLE_SALES));
-    localStorage.setItem('khazana_sales_backup', JSON.stringify(INITIAL_SAMPLE_SALES));
+    setProducts([]);
+    setSales([]);
+    localStorage.removeItem('khazana_inventory');
+    localStorage.removeItem('khazana_sales');
   };
 
   const addProduct = async (product: Product): Promise<Product> => {
@@ -393,7 +165,6 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setProducts(prev => {
         const newProducts = [...prev, parsed];
         localStorage.setItem('khazana_inventory', JSON.stringify(newProducts));
-        localStorage.setItem('khazana_inventory_backup', JSON.stringify(newProducts));
         return newProducts;
       });
       return parsed;
@@ -505,27 +276,34 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       };
 
       const response = await api.post('/sales/', payload);
+      if (!response.data || !response.data.items) {
+        throw new Error('Invalid response from server');
+      }
+      
       const newSale = {
         ...response.data,
         id: response.data.id.toString(),
         invoiceNumber: response.data.invoice_number,
         customerName: response.data.customer_name,
         sellerName: response.data.seller_name,
-        date: new Date(response.data.created_at).toLocaleDateString('en-CA'),
+        date: response.data.created_at ? new Date(response.data.created_at).toLocaleDateString('en-CA') : new Date().toLocaleDateString('en-CA'),
         items: response.data.items.map((it: any) => ({
           id: it.product ? it.product.toString() : `deleted-${it.id}`,
-          name: it.name_snapshot,
-          code: it.code_snapshot,
-          selectedWeight: parseFloat(it.weight),
-          selectedQuantity: it.quantity,
-          selectedPrice: parseFloat(it.price)
+          name: it.name_snapshot || 'Unknown',
+          code: it.code_snapshot || '',
+          selectedWeight: parseFloat(it.weight) || 0,
+          selectedQuantity: parseInt(it.quantity) || 1,
+          selectedPrice: parseFloat(it.price) || 0
         }))
       };
       
       setSales(prev => {
         const updated = [newSale, ...prev];
-        localStorage.setItem('khazana_sales', JSON.stringify(updated));
-        localStorage.setItem('khazana_sales_backup', JSON.stringify(updated));
+        try {
+          localStorage.setItem('khazana_sales', JSON.stringify(updated));
+        } catch (e) {
+          console.error('Failed to save sale to localStorage (Quota exceeded)', e);
+        }
         return updated;
       });
       fetchData();
@@ -538,10 +316,14 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         date: sale.date || new Date().toLocaleDateString('en-CA'),
         timestamp: sale.timestamp || Date.now()
       };
+      
       setSales(prev => {
         const updated = [fallbackSale, ...prev];
-        localStorage.setItem('khazana_sales', JSON.stringify(updated));
-        localStorage.setItem('khazana_sales_backup', JSON.stringify(updated));
+        try {
+          localStorage.setItem('khazana_sales', JSON.stringify(updated));
+        } catch (e) {
+          console.error('LocalStorage full, could not save fallback sale');
+        }
         return updated;
       });
 
@@ -555,8 +337,11 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           }
           return prod;
         });
-        localStorage.setItem('khazana_inventory', JSON.stringify(updated));
-        localStorage.setItem('khazana_inventory_backup', JSON.stringify(updated));
+        try {
+          localStorage.setItem('khazana_inventory', JSON.stringify(updated));
+        } catch (e) {
+          console.warn('LocalStorage full, could not update stock locally');
+        }
         return updated;
       });
     }
@@ -634,10 +419,10 @@ export const InventoryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   );
 };
 
-export const useInventory = () => {
+export function useInventory() {
   const context = useContext(InventoryContext);
   if (context === undefined) {
     throw new Error('useInventory must be used within an InventoryProvider');
   }
   return context;
-};
+}

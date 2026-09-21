@@ -274,13 +274,24 @@ const Dashboard: React.FC = () => {
         </div>
         <div className={`flex flex-col ${language === 'en' ? 'items-start' : 'items-end'} gap-3 w-full sm:w-auto`}>
           <p className="text-kh-muted text-sm">{t('today')}: {todayDate}</p>
-          <Link 
-            to="/pos"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-kh-card dark:bg-kh-gold text-black dark:text-black px-4 h-10 rounded-lg text-sm font-medium hover:bg-kh-card/90 transition-colors shadow-sm"
-          >
-            <ShoppingCart size={18} />
-            <span className="leading-none mb-0.5">{t('new_sale')}</span>
-          </Link>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Link 
+              to="/showroom"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-kh-bg dark:bg-white/5 text-kh-text dark:text-kh-gold border border-kh-card/10 dark:border-white/10 px-4 h-10 rounded-lg text-sm font-bold hover:bg-kh-gold hover:text-black transition-all group"
+            >
+              <Flame size={18} className="text-kh-gold group-hover:text-black" />
+              <span className="leading-none mb-0.5">{t('start_showroom')}</span>
+            </Link>
+            <Link 
+              to="/pos"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-kh-card dark:bg-kh-gold text-black dark:text-black px-4 h-10 rounded-lg text-sm font-medium hover:bg-kh-card/90 transition-colors shadow-sm"
+            >
+              <ShoppingCart size={18} />
+              <span className="leading-none mb-0.5">{t('new_sale')}</span>
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -457,11 +468,16 @@ const Dashboard: React.FC = () => {
           </div>
 
           <Link
-            to="/inventory"
-            className="mt-4 pt-3 border-t border-amber-500/20 flex items-center justify-between text-xs font-bold text-amber-700 dark:text-amber-400 hover:underline"
+            id="dashboard-low-stock-alert-card-link"
+            to="/low-stock"
+            className="mt-4 pt-3 border-t border-amber-500/20 flex items-center justify-between text-xs font-black text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-200 transition-colors group"
           >
-            <span>{language === 'en' ? 'Manage Inventory' : 'مشاهده و مدیریت انبار'}</span>
-            <ArrowRight size={14} className={language === 'en' ? '' : 'rotate-180'} />
+            <span className="relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-current after:transition-all group-hover:after:w-full">
+              {language === 'en' ? 'View All Alerts' : 'مشاهده تمام هشدارها'}
+            </span>
+            <div className="p-1 bg-amber-500/10 rounded-lg group-hover:bg-amber-500/20 transition-all">
+              <ArrowRight size={14} className={language === 'en' ? 'group-hover:translate-x-0.5 transition-transform' : 'rotate-180 group-hover:-translate-x-0.5 transition-transform'} />
+            </div>
           </Link>
         </div>
       </div>
