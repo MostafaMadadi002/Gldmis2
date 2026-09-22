@@ -495,13 +495,13 @@ const Reports: React.FC = () => {
                   const hasSales = sales.some(s => toISODate(s.date) === dStr);
                   const hasExpenses = expensesList.some(e => toISODate(e.date) === dStr);
 
-                  const dayNetProfit = useMemo(() => {
+                  const dayNetProfit = (() => {
                     const daySales = sales.filter(s => toISODate(s.date) === dStr);
                     const dayExpenses = expensesList.filter(e => toISODate(e.date) === dStr);
                     const gross = daySales.reduce((sum, s) => sum + calculateSaleProfit(s, products).profit, 0);
                     const expTotal = dayExpenses.reduce((sum, e) => sum + e.amount, 0);
                     return gross - expTotal;
-                  }, [dStr, sales, expensesList, products]);
+                  })();
 
                   return (
                     <button

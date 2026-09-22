@@ -1,7 +1,7 @@
 /// <reference types="vite/client" />
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -33,7 +33,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Only redirect if it's a 401, not a login request, and we aren't already on the login page
+    if (error.response?.status === 401 && 
+        !error.config?.url?.includes('/auth/login/') && 
+        window.location.pathname !== '/') {
       // Handle unauthorized error (e.g., redirect to login)
       localStorage.removeItem('khazana_user');
       window.location.href = '/';

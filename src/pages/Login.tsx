@@ -16,6 +16,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  React.useEffect(() => {
+    console.log('Login component mounted. Translations status:', {
+      invalid_credentials: t('invalid_credentials'),
+      login_error: t('login_error')
+    });
+  }, []);
+
   const isRtl = language !== 'en';
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,24 +32,42 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     
     try {
       // First attempt: Real Backend JWT Authentication
+      console.log('Attempting login for:', username.trim());
       const response = await api.post('/auth/login/', { username: username.trim(), password });
       const { access, refresh } = response.data;
       
-      // Store tokens to fetch profile
-      localStorage.setItem('khazana_user', JSON.stringify({ access, refresh }));
+      // Temporary token for profile fetch (don't persist to khazana_user yet to avoid interceptor issues)
+      // Actually api.ts reads from localStorage, so we need it there temporarily or pass it in headers manually
+      // But we'll just be careful.
+      localStorage.setItem('khazana_temp_token', access);
       
       // Fetch user profile from Django backend
-      const profileResponse = await api.get('/users/me/');
+      const profileResponse = await api.get('/users/me/', {
+        headers: { Authorization: `Bearer ${access}` }
+      });
+      
       const userData = {
         ...profileResponse.data,
         access,
         refresh
       };
       
+      // Now persist full user data
+      localStorage.setItem('khazana_user', JSON.stringify(userData));
+      localStorage.removeItem('khazana_temp_token');
+      
+      console.log('Login successful');
       setIsLoading(false);
       onLogin(userData);
     } catch (backendError: any) {
       console.warn('Backend login attempt failed:', backendError);
+      localStorage.removeItem('khazana_temp_token');
+      localStorage.removeItem('khazana_user'); // Clean up any partial state
+      
+      // Extract specific error message from backend if available
+      const backendMessage = backendError.response?.data?.detail || 
+                             backendError.response?.data?.message || 
+                             (typeof backendError.response?.data === 'string' ? backendError.response.data : null);
 
       // Strict user verification check:
       // If backend is not available, only allow existing verified users or superusers
@@ -65,6 +90,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         (matchedUser && matchedUser.password === password);
 
       if (isSuperUserCreds) {
+        console.log('Login successful via fallback/superuser');
         const superuserData = {
           id: matchedUser?.id || '1',
           name: matchedUser ? `${matchedUser.first_name || matchedUser.firstName || ''} ${matchedUser.last_name || matchedUser.lastName || ''}`.trim() || matchedUser.username : 'مدیر سیستم (Superuser)',
@@ -81,8 +107,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       }
 
       // If user does not exist or password mismatch
+      console.error('Invalid credentials or unauthorized access');
       setIsLoading(false);
-      setErrorMessage(t('invalid_credentials'));
+      
+      // Use backend message if it's a 401/403, otherwise show generic invalid credentials
+      if (backendMessage && backendError.response?.status < 500) {
+        setErrorMessage(backendMessage);
+      } else {
+        setErrorMessage(t('invalid_credentials'));
+      }
     }
   };
 
@@ -105,17 +138,15 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             </div>
 
             {errorMessage && (
-              <motion.div 
-                initial={{ opacity: 0, y: -20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                className="mb-6 p-4 bg-red-500/10 border-2 border-red-500/30 rounded-2xl flex items-start gap-3 text-sm text-red-600 dark:text-red-400 font-black shadow-lg shadow-red-500/5"
+              <div 
+                className="mb-6 p-4 bg-red-500/10 border-2 border-red-500/30 rounded-2xl flex items-start gap-3 text-sm text-red-600 dark:text-red-400 font-black shadow-lg shadow-red-500/5 animate-in fade-in slide-in-from-top-2"
               >
                 <AlertCircle size={20} className="shrink-0 mt-0.5" />
                 <div className="flex flex-col">
                   <span className="font-black">{t('login_error')}</span>
                   <span className="text-xs opacity-90 mt-0.5">{errorMessage}</span>
                 </div>
-              </motion.div>
+              </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -129,8 +160,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     type="text" 
                     required
                     value={username}
-                    onChange={(e) => {
-                      setUsername(e.target.value);
+                    onChange={(e) => setUsername(e.target.value)}
+                    onFocus={() => {
                       if (errorMessage) setErrorMessage(null);
                     }}
                     placeholder="Username"
@@ -150,8 +181,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
+                    onChange={(e) => setPassword(e.target.value)}
+                    onFocus={() => {
                       if (errorMessage) setErrorMessage(null);
                     }}
                     placeholder="••••••••"
